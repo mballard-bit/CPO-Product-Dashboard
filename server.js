@@ -6,8 +6,15 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 const PENDO_API_KEY = process.env.PENDO_API_KEY;
-const PENDO_SUB_ID = process.env.PENDO_SUB_ID;
 const PENDO_APP_ID = process.env.PENDO_APP_ID;
+if (!PENDO_API_KEY) {
+  console.error('FATAL: PENDO_API_KEY is not set in .env');
+  process.exit(1);
+}
+if (!PENDO_APP_ID) {
+  console.error('FATAL: PENDO_APP_ID is not set in .env');
+  process.exit(1);
+}
 
 app.use(cors());
 app.use(express.json());
@@ -34,7 +41,7 @@ const pendoHeaders = {
 // Returns visitor + account counts for a page over the last 30 days
 app.get('/api/pendo/pages', async (req, res) => {
   try {
-    const { pageId, segmentId } = req.query;
+    const { pageId } = req.query;
     if (!pageId) return res.status(400).json({ error: 'pageId is required' });
 
     const { startDate, endDate } = getDateRange();
@@ -72,7 +79,7 @@ app.get('/api/pendo/pages', async (req, res) => {
 // Returns click counts for a feature over the last 30 days
 app.get('/api/pendo/features', async (req, res) => {
   try {
-    const { featureId, segmentId } = req.query;
+    const { featureId } = req.query;
     if (!featureId) return res.status(400).json({ error: 'featureId is required' });
 
     const { startDate, endDate } = getDateRange();
@@ -126,7 +133,6 @@ app.get('/api/pendo/pes', async (req, res) => {
 // Returns active visitor + account totals for the app over the last 30 days
 app.get('/api/pendo/activity', async (req, res) => {
   try {
-    const { segmentId } = req.query;
     const { startDate, endDate } = getDateRange();
 
     const response = await axios.post(
@@ -158,6 +164,8 @@ app.get('/api/pendo/activity', async (req, res) => {
   }
 });
 
+// Note: segmentId filtering is not implemented in v1 — add a conditional pipeline
+// filter stage to each endpoint when segment-based views are needed.
 app.listen(PORT, () => {
   console.log(`CPO Dashboard server running on port ${PORT}`);
 });
