@@ -52,7 +52,7 @@ const AREAS: ProductArea[] = [
       {
         label: 'Active Visitors',
         pendoType: 'pageVisitors',
-        pendoIds: [], // TODO: add Time & Attendance page ID from Pendo → Pages
+        pendoIds: ['l2jUbQwltYUn2ncL0MYGshAshps'], // Time & Attendance (Main Navigation)
         format: 'number',
         showTrend: true,
       },
@@ -136,7 +136,7 @@ const AREAS: ProductArea[] = [
       {
         label: 'Active Visitors',
         pendoType: 'pageVisitors',
-        pendoIds: [], // TODO: add Performance page ID from Pendo → Pages
+        pendoIds: ['PYu_XHeheNBtQs75q508FbBX90k'], // Employee > Performance Tab
         format: 'number',
         showTrend: true,
       },
@@ -163,8 +163,10 @@ const AREAS: ProductArea[] = [
       },
     ],
     featureRows: [
-      { label: 'Schedule Demo', pendoType: 'feature', pendoId: 'LFGSLegqnTmdOemFI8ei3wB9gvQ', metric: 'visitors' },
-      // Add more performance feature IDs from Pendo → Features once performance module pages are identified
+      { label: 'Performance Tab', pendoType: 'page', pendoId: 'PYu_XHeheNBtQs75q508FbBX90k', metric: 'visitors' },
+      { label: 'Goals', pendoType: 'page', pendoId: 'nUUIiFiP7GbfMrlPrwzr-5YLu8c', metric: 'visitors' },
+      { label: 'Assessment', pendoType: 'page', pendoId: 'dqLtp4qScPNwZFOloylXWEkr0zE', metric: 'visitors' },
+      { label: 'Feedback', pendoType: 'page', pendoId: 'n8OT20n-C3poKiM9uNHIT9pGTfs', metric: 'visitors' },
     ],
   },
   {
