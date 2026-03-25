@@ -21,15 +21,11 @@ app.use(express.json());
 
 const PENDO_BASE = 'https://app.pendo.io/api/v1';
 
-// Compute last-30-days date range (server-side, never from frontend)
-function getDateRange() {
-  const end = new Date();
+// Compute last-30-days start date (server-side, never from frontend)
+function getStartDate() {
   const start = new Date();
   start.setDate(start.getDate() - 30);
-  return {
-    startDate: start.toISOString().split('T')[0],
-    endDate: end.toISOString().split('T')[0],
-  };
+  return start.toISOString().split('T')[0];
 }
 
 const pendoHeaders = {
@@ -37,14 +33,14 @@ const pendoHeaders = {
   'Content-Type': 'application/json',
 };
 
-// GET /api/pendo/pages?pageId=xxx&segmentId=yyy
+// GET /api/pendo/pages?pageId=xxx
 // Returns visitor + account counts for a page over the last 30 days
 app.get('/api/pendo/pages', async (req, res) => {
   try {
     const { pageId } = req.query;
     if (!pageId) return res.status(400).json({ error: 'pageId is required' });
 
-    const { startDate, endDate } = getDateRange();
+    const startDate = getStartDate();
 
     const response = await axios.post(
       `${PENDO_BASE}/aggregation`,
@@ -52,14 +48,18 @@ app.get('/api/pendo/pages', async (req, res) => {
         response: { mimeType: 'application/json' },
         request: {
           pipeline: [
-            { source: { pageEvents: { pageId } } },
-            { filter: `day >= "${startDate}" && day <= "${endDate}"` },
+            {
+              source: {
+                pageEvents: { pageId },
+                timeSeries: { period: 'dayRange', first: startDate, count: 30 },
+              },
+            },
             {
               group: {
                 group: [],
                 fields: [
-                  { count: 'visitorId', named: 'numVisitors' },
-                  { count: 'accountId', named: 'numAccounts' },
+                  { numVisitors: { count: 'visitorId' } },
+                  { numAccounts: { count: 'accountId' } },
                 ],
               },
             },
@@ -75,14 +75,14 @@ app.get('/api/pendo/pages', async (req, res) => {
   }
 });
 
-// GET /api/pendo/features?featureId=xxx&segmentId=yyy
+// GET /api/pendo/features?featureId=xxx
 // Returns click counts for a feature over the last 30 days
 app.get('/api/pendo/features', async (req, res) => {
   try {
     const { featureId } = req.query;
     if (!featureId) return res.status(400).json({ error: 'featureId is required' });
 
-    const { startDate, endDate } = getDateRange();
+    const startDate = getStartDate();
 
     const response = await axios.post(
       `${PENDO_BASE}/aggregation`,
@@ -90,14 +90,18 @@ app.get('/api/pendo/features', async (req, res) => {
         response: { mimeType: 'application/json' },
         request: {
           pipeline: [
-            { source: { featureEvents: { featureId } } },
-            { filter: `day >= "${startDate}" && day <= "${endDate}"` },
+            {
+              source: {
+                featureEvents: { featureId },
+                timeSeries: { period: 'dayRange', first: startDate, count: 30 },
+              },
+            },
             {
               group: {
                 group: [],
                 fields: [
-                  { count: 'visitorId', named: 'numVisitors' },
-                  { count: 'accountId', named: 'numAccounts' },
+                  { numVisitors: { count: 'visitorId' } },
+                  { numAccounts: { count: 'accountId' } },
                 ],
               },
             },
@@ -129,11 +133,12 @@ app.get('/api/pendo/pes', async (req, res) => {
   }
 });
 
-// GET /api/pendo/activity?segmentId=yyy
+// GET /api/pendo/activity
 // Returns active visitor + account totals for the app over the last 30 days
 app.get('/api/pendo/activity', async (req, res) => {
   try {
-    const { startDate, endDate } = getDateRange();
+    const startDate = getStartDate();
+    const startMs = new Date(startDate).getTime();
 
     const response = await axios.post(
       `${PENDO_BASE}/aggregation`,
@@ -142,13 +147,13 @@ app.get('/api/pendo/activity', async (req, res) => {
         request: {
           pipeline: [
             { source: { visitors: { appId: PENDO_APP_ID } } },
-            { filter: `lastvisit >= ${new Date(startDate).getTime()}` },
+            { filter: `lastvisit >= ${startMs}` },
             {
               group: {
                 group: [],
                 fields: [
-                  { count: 'visitorId', named: 'totalVisitors' },
-                  { count: 'accountId', named: 'totalAccounts' },
+                  { totalVisitors: { count: 'visitorId' } },
+                  { totalAccounts: { count: 'accountId' } },
                 ],
               },
             },
