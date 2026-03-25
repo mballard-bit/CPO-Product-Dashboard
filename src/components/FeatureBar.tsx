@@ -1,7 +1,7 @@
 import React from 'react';
 import { FeatureBarValue } from '../types';
 import {
-  FeatureRowContainer, FeatureLabel, BarTrack, BarFill, FeaturePercent, ErrorText
+  FeatureRowContainer, FeatureLabel, BarTrack, BarFill, FeaturePercent
 } from '../styles/StyledComponents';
 
 interface Props {

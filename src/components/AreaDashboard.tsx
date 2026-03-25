@@ -58,6 +58,7 @@ const AreaDashboard: React.FC<Props> = ({ area, refreshKey }) => {
 
     load();
     return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [area.id, refreshKey, retryKey]);
 
   if (allFailed) {
