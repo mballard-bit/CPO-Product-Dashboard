@@ -121,7 +121,8 @@ app.get('/api/pendo/features', async (req, res) => {
 // Returns Product Engagement Score (adoption, stickiness, growth)
 app.get('/api/pendo/pes', async (req, res) => {
   try {
-    const { startDate, endDate } = getDateRange();
+    const startDate = getStartDate();
+    const endDate = new Date().toISOString().split('T')[0];
     const response = await axios.get(
       `${PENDO_BASE}/score/pes?app_id=${PENDO_APP_ID}&start=${startDate}&end=${endDate}`,
       { headers: pendoHeaders }
