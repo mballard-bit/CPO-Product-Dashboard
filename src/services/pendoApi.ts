@@ -56,6 +56,18 @@ export async function fetchAppTotals(): Promise<AppTotals> {
   };
 }
 
+export async function fetchBaseTotals(base: { type: 'page' | 'feature'; id: string }): Promise<AppTotals> {
+  const endpoint = base.type === 'page'
+    ? `${API_BASE}/pages?pageId=${encodeURIComponent(base.id)}`
+    : `${API_BASE}/features?featureId=${encodeURIComponent(base.id)}`;
+  const data = await safeFetch<PendoAggResult>(endpoint);
+  const row = data?.results?.[0];
+  return {
+    totalVisitors: row?.numVisitors ?? null,
+    totalAccounts: row?.numAccounts ?? null,
+  };
+}
+
 export async function fetchFeatureBarValue(row: FeatureRow, totals: AppTotals): Promise<FeatureBarValue> {
   const endpoint = row.pendoType === 'page'
     ? `${API_BASE}/pages?pageId=${encodeURIComponent(row.pendoId)}`
@@ -69,6 +81,29 @@ export async function fetchFeatureBarValue(row: FeatureRow, totals: AppTotals): 
 
   if (count == null || !total) return { percent: null, loading: false, error: !data };
 
+  return {
+    percent: Math.min(100, Math.round((count / total) * 100)),
+    loading: false,
+    error: false,
+  };
+}
+
+export async function fetchRawFeatureData(row: FeatureRow): Promise<{ numVisitors?: number; numAccounts?: number } | null> {
+  const endpoint = row.pendoType === 'page'
+    ? `${API_BASE}/pages?pageId=${encodeURIComponent(row.pendoId)}`
+    : `${API_BASE}/features?featureId=${encodeURIComponent(row.pendoId)}`;
+  const data = await safeFetch<PendoAggResult>(endpoint);
+  return data?.results?.[0] ?? null;
+}
+
+export function computeFeatureBar(
+  raw: { numVisitors?: number; numAccounts?: number } | null,
+  row: FeatureRow,
+  totals: AppTotals
+): FeatureBarValue {
+  const count = row.metric === 'visitors' ? raw?.numVisitors : raw?.numAccounts;
+  const total = row.metric === 'visitors' ? totals.totalVisitors : totals.totalAccounts;
+  if (count == null || !total) return { percent: null, loading: false, error: raw === null };
   return {
     percent: Math.min(100, Math.round((count / total) * 100)),
     loading: false,

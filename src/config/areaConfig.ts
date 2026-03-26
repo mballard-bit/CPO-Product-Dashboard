@@ -10,7 +10,7 @@ const AREAS: ProductArea[] = [
       {
         label: 'Active Visitors',
         pendoType: 'pageVisitors',
-        pendoIds: ['S-a6w3_UAYUvoDNIH7wH8v29NZ4'], // Benefits > Onboarding Module
+        pendoIds: ['C8Oue8IOfwvGtEX41S6FZG2WaAE'], // Employee Profile > Benefits Tab
         format: 'number',
         showTrend: true,
       },
@@ -19,13 +19,6 @@ const AREAS: ProductArea[] = [
         pendoType: 'featureUsage',
         pendoIds: ['LjL6IfwYUFCdG4G-gjbLvnrcq5k'], // Benefits > Admin Approval ~ Vision Employee Pays
         format: 'number',
-        showTrend: false,
-      },
-      {
-        label: 'PES Score',
-        pendoType: 'pes',
-        pendoIds: [],
-        format: 'score',
         showTrend: false,
       },
       {
@@ -39,8 +32,8 @@ const AREAS: ProductArea[] = [
     featureRows: [
       { label: 'Main Nav → Benefits', pendoType: 'feature', pendoId: 'pBRixPLIvjXyi8jHIqftnm-t0n8', metric: 'visitors' },
       { label: 'Admin Approval', pendoType: 'feature', pendoId: 'LjL6IfwYUFCdG4G-gjbLvnrcq5k', metric: 'visitors' },
+      { label: 'Benefits Home Page', pendoType: 'page', pendoId: 'HEfPp9RkNTVx1SfYpL3ATytOlGc', metric: 'visitors' },
       { label: 'Benefit History Details', pendoType: 'feature', pendoId: '6HJt7LJTV69lAL-iOuP4FPLBuiA', metric: 'visitors' },
-      { label: 'Show Benefits History', pendoType: 'feature', pendoId: 'E18-Hc8CU2TxREOas9-zs569BOQ', metric: 'visitors' },
     ],
   },
   {
@@ -52,22 +45,15 @@ const AREAS: ProductArea[] = [
       {
         label: 'Active Visitors',
         pendoType: 'pageVisitors',
-        pendoIds: ['l2jUbQwltYUn2ncL0MYGshAshps'], // Time & Attendance (Main Navigation)
+        pendoIds: ['PSc2cz8erT4i67QDQ-Ll1fZiKew'], // My Info > Timesheet Tab
         format: 'number',
         showTrend: true,
       },
       {
-        label: 'Nav Clicks',
+        label: 'Timesheets Tile Clicks',
         pendoType: 'featureUsage',
-        pendoIds: ['2U8favqgL92hWg29KkxIVj1yNE0'], // Main Nav ~ Time & Attendance
+        pendoIds: ['oHrXyQlxY6wyM0dg4nOMyYmzzz8'], // Timesheets Tile
         format: 'number',
-        showTrend: false,
-      },
-      {
-        label: 'PES Score',
-        pendoType: 'pes',
-        pendoIds: [],
-        format: 'score',
         showTrend: false,
       },
       {
@@ -79,8 +65,8 @@ const AREAS: ProductArea[] = [
       },
     ],
     featureRows: [
-      { label: 'Main Nav → Time & Attendance', pendoType: 'feature', pendoId: '2U8favqgL92hWg29KkxIVj1yNE0', metric: 'visitors' },
       { label: 'Timesheets Tile', pendoType: 'feature', pendoId: 'oHrXyQlxY6wyM0dg4nOMyYmzzz8', metric: 'visitors' },
+      { label: 'My Info Timesheet Tab', pendoType: 'page', pendoId: 'PSc2cz8erT4i67QDQ-Ll1fZiKew', metric: 'visitors' },
       { label: 'Hours Tile', pendoType: 'feature', pendoId: 'RJEjJj62J_sWBgC_WF7FrFb9bT8', metric: 'visitors' },
       { label: 'Hours In Payroll Tab', pendoType: 'feature', pendoId: 'vFd5m6U2tgYju3rWp8cDlxucZNo', metric: 'visitors' },
     ],
@@ -106,13 +92,6 @@ const AREAS: ProductArea[] = [
         showTrend: true,
       },
       {
-        label: 'PES Score',
-        pendoType: 'pes',
-        pendoIds: [],
-        format: 'score',
-        showTrend: false,
-      },
-      {
         label: 'Active Accounts',
         pendoType: 'accounts',
         pendoIds: [],
@@ -123,7 +102,6 @@ const AREAS: ProductArea[] = [
     featureRows: [
       { label: 'Start Payroll', pendoType: 'feature', pendoId: 'GPDY0DjveiqPckv1aLcoVnC9Fuk', metric: 'accounts' },
       { label: 'Approve Payroll', pendoType: 'feature', pendoId: 'Nggav53kQOZY206G1tFlKs1HXNs', metric: 'accounts' },
-      { label: 'Payroll History', pendoType: 'feature', pendoId: '65h71yhfq-w9zJVakWij8HivPI4', metric: 'accounts' },
       { label: 'Fix Now (Employee Errors)', pendoType: 'feature', pendoId: 'BT0gI3oY8UdpucvL4DLYHsFc0Vs', metric: 'visitors' },
     ],
   },
@@ -148,13 +126,6 @@ const AREAS: ProductArea[] = [
         showTrend: false,
       },
       {
-        label: 'PES Score',
-        pendoType: 'pes',
-        pendoIds: [],
-        format: 'score',
-        showTrend: false,
-      },
-      {
         label: 'Active Accounts',
         pendoType: 'accounts',
         pendoIds: [],
@@ -172,28 +143,21 @@ const AREAS: ProductArea[] = [
   {
     id: 'hiring',
     name: 'Hiring',
-    description: 'Greenhouse ATS integration and hiring workflows',
+    description: 'BambooHR Hiring — job openings, candidates, and applicant tracking',
     defaultEnabled: true,
     metricCards: [
       {
         label: 'Active Visitors',
         pendoType: 'pageVisitors',
-        pendoIds: ['TTFNNUbg7btir1iARhlYqyqYS_g'], // Greenhouse > Dashboard
+        pendoIds: ['BX9H5KpMgKIi1Ou0u8jbaNJiSmg'], // Hiring > General (catch-all)
         format: 'number',
         showTrend: true,
       },
       {
-        label: 'Payment Center Clicks',
+        label: 'Nav Clicks',
         pendoType: 'featureUsage',
-        pendoIds: ['bLDjPB0DpmX-EaNyfgjkeuGKXJo'], // Greenhouse > Payroll ~ Payment Center
+        pendoIds: ['WL_VhRPrJS1oHxr6jS8eAc3VMfM'], // Main Nav ~ Hiring
         format: 'number',
-        showTrend: false,
-      },
-      {
-        label: 'PES Score',
-        pendoType: 'pes',
-        pendoIds: [],
-        format: 'score',
         showTrend: false,
       },
       {
@@ -205,9 +169,10 @@ const AREAS: ProductArea[] = [
       },
     ],
     featureRows: [
-      { label: 'Greenhouse Dashboard', pendoType: 'page', pendoId: 'TTFNNUbg7btir1iARhlYqyqYS_g', metric: 'visitors' },
-      { label: 'Payment Center', pendoType: 'feature', pendoId: 'bLDjPB0DpmX-EaNyfgjkeuGKXJo', metric: 'visitors' },
-      { label: 'Potential Adjustments', pendoType: 'feature', pendoId: 'olEORizJvhiO-8GghDaoaLHI8Bg', metric: 'visitors' },
+      { label: 'Hiring Overview', pendoType: 'page', pendoId: 'BX9H5KpMgKIi1Ou0u8jbaNJiSmg', metric: 'visitors' },
+      { label: 'Job Openings', pendoType: 'page', pendoId: 'cVOBtmA4CP3GWCDyPB4-pVzKKU4', metric: 'visitors' },
+      { label: 'Candidates Tab', pendoType: 'page', pendoId: 'sgRCxFblsq9dthtIWR7-cnZS6EA', metric: 'visitors' },
+      { label: 'Add Job Opening', pendoType: 'feature', pendoId: 'HvXG7X32ThvBsvHbksvHEgHqDaA', metric: 'visitors' },
     ],
   },
   {
@@ -231,13 +196,6 @@ const AREAS: ProductArea[] = [
         showTrend: true,
       },
       {
-        label: 'PES Score',
-        pendoType: 'pes',
-        pendoIds: [],
-        format: 'score',
-        showTrend: false,
-      },
-      {
         label: 'Active Accounts',
         pendoType: 'accounts',
         pendoIds: [],
@@ -250,6 +208,50 @@ const AREAS: ProductArea[] = [
       { label: 'Standard Reports', pendoType: 'page', pendoId: 'p011cHh56kdX3XxpR1tsrnNgubU', metric: 'visitors' },
       { label: 'Custom Reports', pendoType: 'page', pendoId: 'CJhSmICbH88x0AbB9M2x9AZVr5k', metric: 'visitors' },
     ],
+  },
+  {
+    id: 'global-employment',
+    name: 'Global Employment',
+    description: 'Employer of Record (EOR) integration with Remote — global hiring and compliance',
+    defaultEnabled: true,
+    metricCards: [
+      {
+        label: 'Marketing Page Visitors',
+        pendoType: 'pageVisitors',
+        pendoIds: ['7OXzvl3RCCqrYuY_vjhmMsM-oIw'], // Settings > Global Employment (Marketing Page)
+        format: 'number',
+        showTrend: true,
+      },
+      {
+        label: 'Marketing Cost Calculator',
+        pendoType: 'featureUsage',
+        pendoIds: ['TV0QMAVkj9KlCcugrEiuZsHKTUc'], // Settings > Global Employment ~ Calculate
+        format: 'number',
+        showTrend: false,
+      },
+      {
+        label: 'Active Accounts',
+        pendoType: 'accounts',
+        pendoIds: [],
+        format: 'number',
+        showTrend: true,
+      },
+    ],
+    featureRows: [
+      { label: 'Nav → Global Employment', pendoType: 'feature', pendoId: 'v-mP2n8WvWdP3Y7qnuCyEyW4Rjk', metric: 'visitors' },
+      { label: 'Marketing Page', pendoType: 'page', pendoId: '7OXzvl3RCCqrYuY_vjhmMsM-oIw', metric: 'visitors' },
+      { label: 'Marketing Cost Calculator', pendoType: 'feature', pendoId: 'TV0QMAVkj9KlCcugrEiuZsHKTUc', metric: 'visitors' },
+      { label: 'Full Breakdown Calculator', pendoType: 'feature', pendoId: 'tK4W_hUKy8VP_rFN52l2rftbeF0', metric: 'visitors' },
+    ],
+    trendCharts: [
+      { label: 'Marketing Cost Calculator', type: 'feature', id: 'TV0QMAVkj9KlCcugrEiuZsHKTUc', metric: 'visitors' },
+      { label: 'Full Breakdown Calculator', type: 'feature', id: 'tK4W_hUKy8VP_rFN52l2rftbeF0', metric: 'visitors' },
+      { label: 'Demos Scheduled', type: 'feature', id: 'nEnmohV70aoH4r5GMzQAU1cZ9fs', metric: 'visitors' },
+      { label: 'EOR Installs', type: 'feature', id: '-_63CskKTL0BsCkfu-qBAejZEIE', metric: 'visitors' },
+      { label: 'New EOR Employee', type: 'page', id: 'iuC9Z3SrL-R35o63bHjbpEJIid4', metric: 'visitors' },
+    ],
+    // Use marketing page visitors as denominator so bars show funnel conversion rates
+    featureBarBase: { type: 'page', id: '7OXzvl3RCCqrYuY_vjhmMsM-oIw' },
   },
 ];
 

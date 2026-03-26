@@ -112,10 +112,9 @@ export const AreaDescription = styled.p`
 
 export const MetricCardGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 12px;
   margin-bottom: 16px;
-  @media (max-width: 1000px) { grid-template-columns: repeat(2, 1fr); }
 `;
 
 export const CardContainer = styled.div`
@@ -202,6 +201,37 @@ export const FeaturePercent = styled.div`
   color: ${colors.text};
   width: 36px;
   text-align: right;
+`;
+
+export const ChartGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+  @media (max-width: 900px) { grid-template-columns: 1fr; }
+`;
+
+export const ChartSection = styled.div`
+  background: ${colors.cardBackground};
+  border: 1px solid ${colors.border};
+  border-radius: 8px;
+  padding: 16px;
+`;
+
+export const ChartTitle = styled.div`
+  font-size: 13px;
+  font-weight: 600;
+  color: ${colors.text};
+  margin-bottom: 12px;
+`;
+
+export const ChartPlaceholder = styled.div`
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: ${colors.lightText};
 `;
 
 export const ErrorText = styled.div`

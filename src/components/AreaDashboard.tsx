@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { ProductArea, MetricValue, FeatureBarValue, AppTotals } from '../types';
-import { fetchMetricValue, fetchFeatureBarValue, fetchAppTotals } from '../services/pendoApi';
+import { fetchMetricValue, fetchRawFeatureData, computeFeatureBar, fetchAppTotals, fetchBaseTotals } from '../services/pendoApi';
 import MetricCard from './MetricCard';
 import FeatureBar from './FeatureBar';
+import TrendChart from './TrendChart';
 import {
   ContentArea, AreaHeader, AreaTitle, AreaDescription,
-  MetricCardGrid, FeatureSection, FeatureSectionTitle, Button
+  MetricCardGrid, FeatureSection, FeatureSectionTitle, Button, ChartGrid
 } from '../styles/StyledComponents';
 
 interface Props {
@@ -34,12 +35,14 @@ const AreaDashboard: React.FC<Props> = ({ area, refreshKey }) => {
     let cancelled = false;
 
     async function load() {
-      const totals: AppTotals = await fetchAppTotals();
-
-      const metricResults = await Promise.all(
-        area.metricCards.map(card => fetchMetricValue(card))
-      );
+      // Fire all requests in parallel — no sequential waterfall
+      const [totals, metricResults, featureRaws] = await Promise.all([
+        area.featureBarBase ? fetchBaseTotals(area.featureBarBase) : fetchAppTotals(),
+        Promise.all(area.metricCards.map(card => fetchMetricValue(card))),
+        Promise.all(area.featureRows.map(row => fetchRawFeatureData(row))),
+      ]);
       if (cancelled) return;
+
       const metricVals: MetricValue[] = metricResults.map(r => ({
         value: r.current,
         previousValue: null,
@@ -49,11 +52,9 @@ const AreaDashboard: React.FC<Props> = ({ area, refreshKey }) => {
       setMetricValues(metricVals);
       if (metricVals.every(v => v.error)) setAllFailed(true);
 
-      const featureResults = await Promise.all(
-        area.featureRows.map(row => fetchFeatureBarValue(row, totals))
-      );
-      if (cancelled) return;
-      setFeatureValues(featureResults.map(r => ({ ...r, loading: false })));
+      setFeatureValues(featureRaws.map((raw, i) =>
+        computeFeatureBar(raw, area.featureRows[i], totals)
+      ));
     }
 
     load();
@@ -93,6 +94,14 @@ const AreaDashboard: React.FC<Props> = ({ area, refreshKey }) => {
             <FeatureBar key={row.pendoId} label={row.label} value={featureValues[i]} />
           ))}
         </FeatureSection>
+      )}
+
+      {area.trendCharts && area.trendCharts.length > 0 && (
+        <ChartGrid>
+          {area.trendCharts.map(chart => (
+            <TrendChart key={chart.id} config={chart} refreshKey={refreshKey} />
+          ))}
+        </ChartGrid>
       )}
     </ContentArea>
   );

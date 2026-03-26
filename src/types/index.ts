@@ -18,6 +18,13 @@ export interface FeatureRow {
   // percentage = (metric count / total app visitors or accounts) × 100
 }
 
+export interface TrendChartConfig {
+  label: string;
+  type: 'page' | 'feature';
+  id: string;
+  metric: 'visitors' | 'events';
+}
+
 export interface ProductArea {
   id: string;
   name: string;
@@ -25,6 +32,10 @@ export interface ProductArea {
   defaultEnabled: boolean;
   metricCards: MetricCard[];
   featureRows: FeatureRow[];
+  trendCharts?: TrendChartConfig[];
+  // If set, feature bar % uses this page/feature's visitor count as denominator
+  // instead of total app visitors. Useful for funnel-style areas.
+  featureBarBase?: { type: 'page' | 'feature'; id: string };
 }
 
 export interface MetricValue {
