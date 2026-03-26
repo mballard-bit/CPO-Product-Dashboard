@@ -3,9 +3,10 @@ import AREAS from './config/areaConfig';
 import TabNav from './components/TabNav';
 import AreaDashboard from './components/AreaDashboard';
 import AreaSettings from './components/AreaSettings';
+import PaidJobAdsDashboard from './components/PaidJobAdsDashboard';
 import {
   AppContainer, Header, HeaderLeft, Title, Subtitle,
-  HeaderActions, Button
+  HeaderActions, Button, TabBar, Tab
 } from './styles/StyledComponents';
 
 const STORAGE_KEY = 'cpo_dashboard_enabled_areas';
@@ -29,6 +30,7 @@ const App: React.FC = () => {
   const [enabledIds, setEnabledIds] = useState<Set<string>>(loadEnabledIds);
   const visibleAreas = AREAS.filter(a => enabledIds.has(a.id));
   const [activeId, setActiveId] = useState<string>(() => visibleAreas[0]?.id ?? AREAS[0].id);
+  const PAID_ADS_ID = 'paid-job-ads';
   const [refreshKey, setRefreshKey] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
 
@@ -65,15 +67,21 @@ const App: React.FC = () => {
         </HeaderActions>
       </Header>
 
-      <TabNav
-        areas={visibleAreas}
-        activeId={activeArea?.id ?? ''}
-        onSelect={setActiveId}
-      />
+      <TabBar>
+        {visibleAreas.map(area => (
+          <Tab key={area.id} active={area.id === activeId} onClick={() => setActiveId(area.id)}>
+            {area.name}
+          </Tab>
+        ))}
+        <Tab active={activeId === PAID_ADS_ID} onClick={() => setActiveId(PAID_ADS_ID)}>
+          Paid Job Ads
+        </Tab>
+      </TabBar>
 
-      {activeArea && (
-        <AreaDashboard key={activeArea.id} area={activeArea} refreshKey={refreshKey} />
-      )}
+      {activeId === PAID_ADS_ID
+        ? <PaidJobAdsDashboard refreshKey={refreshKey} />
+        : activeArea && <AreaDashboard key={activeArea.id} area={activeArea} refreshKey={refreshKey} />
+      }
 
       {showSettings && (
         <AreaSettings

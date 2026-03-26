@@ -2,6 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 const Anthropic = require('@anthropic-ai/sdk');
+const { google } = require('googleapis');
 require('dotenv').config();
 
 const app = express();
@@ -446,6 +447,80 @@ app.get('/api/pendo/guide-summary', async (req, res) => {
   } catch (error) {
     console.error('Guide summary error:', error.message);
     res.status(500).json({ error: 'Failed to fetch guide summary' });
+  }
+});
+
+// Google Sheets integration
+const SHEETS_ID = '1t9RSWDSGYM0AAaUK6uZ7t0QURcGZAO6fV7UcVZ6EdUQ';
+const sheetsAuth = new google.auth.GoogleAuth({
+  keyFile: 'service-account.json',
+  scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+});
+
+// GET /api/sheets/paid-job-ads
+// Returns all rows from the Paid Job Ads sheet as an array of objects
+app.get('/api/sheets/paid-job-ads', async (req, res) => {
+  try {
+    const cacheKey = 'sheets:paid-job-ads';
+    const cached = getCached(cacheKey);
+    if (cached) return res.json(cached);
+
+    const client = await sheetsAuth.getClient();
+    const sheets = google.sheets({ version: 'v4', auth: client });
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: SHEETS_ID,
+      range: "'2025&2026'!A48:Z",
+    });
+
+    const rows = response.data.values ?? [];
+    if (rows.length < 2) return res.json({ ats: [], jobs: [] });
+
+    const headers = rows[0];
+
+    // Parse a numeric value from a cell (strip $, commas, %)
+    function parseNum(val) {
+      if (!val || val === '' || val === '#DIV/0!') return null;
+      return parseFloat(String(val).replace(/[$,%]/g, '').replace(/,/g, '')) || null;
+    }
+
+    // Skip the EA row (row index 1) — it's a label/annotation row, not real data
+    const dataRows = rows.slice(2).filter(r => r[0] && r[0] !== 'EA' && r[0] !== '');
+
+    // Left table: ATS / Interview metrics (columns 0-9)
+    const ats = dataRows.map(r => ({
+      week: r[0] ?? '',
+      atsCustomers: parseNum(r[1]),
+      calConnected: parseNum(r[2]),
+      customersInviting: parseNum(r[3]),
+      interviewsScheduled: parseNum(r[4]),
+      interviewsPerActive: parseNum(r[5]),
+      pctScheduling: parseNum(r[6]),
+      invitesSent: parseNum(r[8]),
+      acceptanceRate: parseNum(r[9]),
+    })).filter(r => r.atsCustomers !== null);
+
+    // Right table: LinkedIn / Job posting metrics (columns 12-24)
+    const jobs = dataRows.map(r => ({
+      week: r[12] ?? '',
+      atsCustomers: parseNum(r[14]),
+      jobsPosted: parseNum(r[15]),
+      customersPosted: parseNum(r[16]),
+      firstTimePosting: parseNum(r[17]),
+      jobsPostedToLI: parseNum(r[18]),
+      views: parseNum(r[19]),
+      applicants: parseNum(r[20]),
+      hired: parseNum(r[21]),
+      liRevenue: parseNum(r[22]),
+      bhrRevenue: parseNum(r[23]),
+      pctOfJobsPosted: parseNum(r[24]),
+    })).filter(r => r.jobsPosted !== null || r.liRevenue !== null);
+
+    const result = { ats, jobs };
+    setCached(cacheKey, result, 15 * 60 * 1000);
+    res.json(result);
+  } catch (error) {
+    console.error('Google Sheets error:', error.message);
+    res.status(500).json({ error: 'Failed to fetch Google Sheets data' });
   }
 });
 

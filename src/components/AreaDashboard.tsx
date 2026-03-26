@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ProductArea, MetricValue, FeatureBarValue, AppTotals } from '../types';
+import { ProductArea, MetricValue, FeatureBarValue } from '../types';
 import { fetchMetricValue, fetchRawFeatureData, computeFeatureBar, fetchAppTotals, fetchBaseTotals } from '../services/pendoApi';
 import MetricCard from './MetricCard';
 import FeatureBar from './FeatureBar';
