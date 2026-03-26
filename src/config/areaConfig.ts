@@ -247,7 +247,7 @@ const AREAS: ProductArea[] = [
     ],
     featureRows: [
       { label: 'Main Nav → People', pendoType: 'feature', pendoId: 'Pfpj_MEKedDmdL4_tJDEEulSLN8', metric: 'visitors' },
-      { label: 'Standard Reports', pendoType: 'page', pendoId: 'p011cHb56kdX3XxpR1tsrnNgubU', metric: 'visitors' },
+      { label: 'Standard Reports', pendoType: 'page', pendoId: 'p011cHh56kdX3XxpR1tsrnNgubU', metric: 'visitors' },
       { label: 'Custom Reports', pendoType: 'page', pendoId: 'CJhSmICbH88x0AbB9M2x9AZVr5k', metric: 'visitors' },
     ],
   },

@@ -21,11 +21,11 @@ app.use(express.json());
 
 const PENDO_BASE = 'https://app.pendo.io/api/v1';
 
-// Compute last-30-days start date (server-side, never from frontend)
-function getStartDate() {
+// Compute last-30-days start timestamp in ms (server-side, never from frontend)
+function getStartMs() {
   const start = new Date();
   start.setDate(start.getDate() - 30);
-  return start.toISOString().split('T')[0];
+  return start.getTime();
 }
 
 const pendoHeaders = {
@@ -40,7 +40,7 @@ app.get('/api/pendo/pages', async (req, res) => {
     const { pageId } = req.query;
     if (!pageId) return res.status(400).json({ error: 'pageId is required' });
 
-    const startDate = getStartDate();
+    const startMs = getStartMs();
 
     const response = await axios.post(
       `${PENDO_BASE}/aggregation`,
@@ -51,7 +51,7 @@ app.get('/api/pendo/pages', async (req, res) => {
             {
               source: {
                 pageEvents: { pageId },
-                timeSeries: { period: 'dayRange', first: startDate, count: 30 },
+                timeSeries: { period: 'dayRange', first: startMs, count: 30 },
               },
             },
             {
@@ -82,7 +82,7 @@ app.get('/api/pendo/features', async (req, res) => {
     const { featureId } = req.query;
     if (!featureId) return res.status(400).json({ error: 'featureId is required' });
 
-    const startDate = getStartDate();
+    const startMs = getStartMs();
 
     const response = await axios.post(
       `${PENDO_BASE}/aggregation`,
@@ -93,7 +93,7 @@ app.get('/api/pendo/features', async (req, res) => {
             {
               source: {
                 featureEvents: { featureId },
-                timeSeries: { period: 'dayRange', first: startDate, count: 30 },
+                timeSeries: { period: 'dayRange', first: startMs, count: 30 },
               },
             },
             {
@@ -121,7 +121,8 @@ app.get('/api/pendo/features', async (req, res) => {
 // Returns Product Engagement Score (adoption, stickiness, growth)
 app.get('/api/pendo/pes', async (req, res) => {
   try {
-    const startDate = getStartDate();
+    const startMs = getStartMs();
+    const startDate = new Date(startMs).toISOString().split('T')[0];
     const endDate = new Date().toISOString().split('T')[0];
     const response = await axios.get(
       `${PENDO_BASE}/score/pes?app_id=${PENDO_APP_ID}&start=${startDate}&end=${endDate}`,
@@ -138,8 +139,7 @@ app.get('/api/pendo/pes', async (req, res) => {
 // Returns active visitor + account totals for the app over the last 30 days
 app.get('/api/pendo/activity', async (req, res) => {
   try {
-    const startDate = getStartDate();
-    const startMs = new Date(startDate).getTime();
+    const startMs = getStartMs();
 
     const response = await axios.post(
       `${PENDO_BASE}/aggregation`,
@@ -148,13 +148,13 @@ app.get('/api/pendo/activity', async (req, res) => {
         request: {
           pipeline: [
             { source: { visitors: { appId: PENDO_APP_ID } } },
-            { filter: `lastvisit >= ${startMs}` },
+            { filter: `metadata.auto__323232.lastvisit >= ${startMs}` },
             {
               group: {
                 group: [],
                 fields: [
                   { totalVisitors: { count: 'visitorId' } },
-                  { totalAccounts: { count: 'accountId' } },
+                  { totalAccounts: { count: 'metadata.auto.accountid' } },
                 ],
               },
             },
