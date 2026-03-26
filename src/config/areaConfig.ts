@@ -250,6 +250,9 @@ const AREAS: ProductArea[] = [
       { label: 'EOR Installs', type: 'feature', id: '-_63CskKTL0BsCkfu-qBAejZEIE', metric: 'visitors' },
       { label: 'New EOR Employee', type: 'page', id: 'iuC9Z3SrL-R35o63bHjbpEJIid4', metric: 'visitors' },
     ],
+    guideCards: [
+      { label: 'EOR New Location Prompt', guideId: 'Qmb-ZQT5qfmdK9p1PFTyj15bpbs' },
+    ],
     // Use marketing page visitors as denominator so bars show funnel conversion rates
     featureBarBase: { type: 'page', id: '7OXzvl3RCCqrYuY_vjhmMsM-oIw' },
   },

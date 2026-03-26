@@ -18,6 +18,11 @@ export interface FeatureRow {
   // percentage = (metric count / total app visitors or accounts) × 100
 }
 
+export interface GuideCardConfig {
+  label: string;
+  guideId: string;
+}
+
 export interface TrendChartConfig {
   label: string;
   type: 'page' | 'feature';
@@ -33,6 +38,7 @@ export interface ProductArea {
   metricCards: MetricCard[];
   featureRows: FeatureRow[];
   trendCharts?: TrendChartConfig[];
+  guideCards?: GuideCardConfig[];
   // If set, feature bar % uses this page/feature's visitor count as denominator
   // instead of total app visitors. Useful for funnel-style areas.
   featureBarBase?: { type: 'page' | 'feature'; id: string };

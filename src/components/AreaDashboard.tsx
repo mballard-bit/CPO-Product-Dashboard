@@ -4,6 +4,7 @@ import { fetchMetricValue, fetchRawFeatureData, computeFeatureBar, fetchAppTotal
 import MetricCard from './MetricCard';
 import FeatureBar from './FeatureBar';
 import TrendChart from './TrendChart';
+import GuideStatsCard from './GuideStatsCard';
 import {
   ContentArea, AreaHeader, AreaTitle, AreaDescription,
   MetricCardGrid, FeatureSection, FeatureSectionTitle, Button, ChartGrid
@@ -102,6 +103,14 @@ const AreaDashboard: React.FC<Props> = ({ area, refreshKey }) => {
             <TrendChart key={chart.id} config={chart} refreshKey={refreshKey} />
           ))}
         </ChartGrid>
+      )}
+
+      {area.guideCards && area.guideCards.length > 0 && (
+        <>
+          {area.guideCards.map(g => (
+            <GuideStatsCard key={g.guideId} config={g} refreshKey={refreshKey} />
+          ))}
+        </>
       )}
     </ContentArea>
   );

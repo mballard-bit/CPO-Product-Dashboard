@@ -382,6 +382,73 @@ Sentence 1: describe the trend factually with specific numbers. Sentences 2-3: p
   }
 });
 
+// GET /api/pendo/guide-summary?guideId=xxx
+// Returns seen/dismissed/completed counts for an in-app guide over the last 30 days
+app.get('/api/pendo/guide-summary', async (req, res) => {
+  try {
+    const { guideId } = req.query;
+    if (!guideId) return res.status(400).json({ error: 'guideId is required' });
+
+    const cacheKey = `guide-summary:${guideId}`;
+    const cached = getCached(cacheKey);
+    if (cached) return res.json(cached);
+
+    const startMs = getStartMs();
+
+    async function guideCount(type) {
+      const response = await axios.post(
+        `${PENDO_BASE}/aggregation`,
+        {
+          response: { mimeType: 'application/json' },
+          request: {
+            pipeline: [
+              {
+                source: {
+                  guideEvents: { guideId },
+                  timeSeries: { period: 'dayRange', first: startMs, count: 30 },
+                },
+              },
+              { filter: `type == "${type}"` },
+              {
+                group: {
+                  group: [],
+                  fields: [
+                    { numVisitors: { count: 'visitorId' } },
+                    { numEvents: { count: 'numEvents' } },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+        { headers: pendoHeaders }
+      );
+      const row = response.data?.results?.[0] ?? {};
+      return { visitors: row.numVisitors ?? 0, events: row.numEvents ?? 0 };
+    }
+
+    const [seen, dismissed, completed] = await Promise.all([
+      guideCount('guideSeen'),
+      guideCount('guideDismissed'),
+      guideCount('guideComplete'),
+    ]);
+
+    const dismissalRate = seen.visitors > 0
+      ? Math.round((dismissed.visitors / seen.visitors) * 100)
+      : 0;
+    const completionRate = seen.visitors > 0
+      ? Math.round((completed.visitors / seen.visitors) * 100)
+      : 0;
+
+    const result = { seen, dismissed, completed, dismissalRate, completionRate };
+    setCached(cacheKey, result);
+    res.json(result);
+  } catch (error) {
+    console.error('Guide summary error:', error.message);
+    res.status(500).json({ error: 'Failed to fetch guide summary' });
+  }
+});
+
 // Note: segmentId filtering is not implemented in v1 — add a conditional pipeline
 // filter stage to each endpoint when segment-based views are needed.
 app.listen(PORT, () => {
