@@ -1,7 +1,7 @@
 import React from 'react';
 import { MetricCard as MetricCardType, MetricValue } from '../types';
 import {
-  CardContainer, CardLabel, CardValue, CardTrend, CardPlaceholder, ErrorText
+  CardContainer, CardLabel, CardValue, CardTrend, CardPlaceholder, ErrorText, SkeletonBlock
 } from '../styles/StyledComponents';
 
 interface Props {
@@ -26,7 +26,7 @@ const MetricCard: React.FC<Props> = ({ card, value }) => {
   return (
     <CardContainer>
       <CardLabel>{card.label}</CardLabel>
-      {value.loading && <CardPlaceholder>—</CardPlaceholder>}
+      {value.loading && <SkeletonBlock height="32px" width="80px" />}
       {!value.loading && value.error && (
         <>
           <CardPlaceholder>—</CardPlaceholder>

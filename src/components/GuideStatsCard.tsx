@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { GuideCardConfig } from '../types';
-import { colors } from '../styles/StyledComponents';
+import { colors, SkeletonBlock } from '../styles/StyledComponents';
 
 interface Props {
   config: GuideCardConfig;
@@ -25,7 +25,7 @@ const Card = styled.div`
 
 const CardTitle = styled.div`
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   color: ${colors.text};
   margin-bottom: 14px;
   display: flex;
@@ -142,7 +142,7 @@ const GuideStatsCard: React.FC<Props> = ({ config, refreshKey }) => {
   return (
     <Card>
       <CardTitle>{config.label}</CardTitle>
-      {loading && <Placeholder>Loading…</Placeholder>}
+      {loading && <SkeletonBlock height="80px" />}
       {!loading && !data && <Placeholder>No data</Placeholder>}
       {!loading && data && (
         <>

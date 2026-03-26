@@ -1,7 +1,7 @@
 import React from 'react';
 import { FeatureBarValue } from '../types';
 import {
-  FeatureRowContainer, FeatureLabel, BarTrack, BarFill, FeaturePercent
+  FeatureRowContainer, FeatureLabel, BarTrack, BarFill, FeaturePercent, SkeletonBlock
 } from '../styles/StyledComponents';
 
 interface Props {
@@ -12,11 +12,16 @@ interface Props {
 const FeatureBar: React.FC<Props> = ({ label, value }) => (
   <FeatureRowContainer>
     <FeatureLabel>{label}</FeatureLabel>
-    <BarTrack>
-      <BarFill width={value.loading || value.error || value.percent == null ? 0 : value.percent} />
-    </BarTrack>
+    {value.loading
+      ? <SkeletonBlock height="8px" />
+      : (
+        <BarTrack>
+          <BarFill width={value.error || value.percent == null ? 0 : value.percent} />
+        </BarTrack>
+      )
+    }
     <FeaturePercent>
-      {value.loading ? '…' : value.error || value.percent == null ? '—' : `${value.percent}%`}
+      {value.loading ? '' : value.error || value.percent == null ? '—' : `${value.percent}%`}
     </FeaturePercent>
   </FeatureRowContainer>
 );

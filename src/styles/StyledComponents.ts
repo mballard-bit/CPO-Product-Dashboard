@@ -1,21 +1,52 @@
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 
+// ─── Fabric Design Tokens ──────────────────────────────────────────────────
 export const colors = {
-  primary: '#1a73e8',
-  background: '#f8f9fa',
-  cardBackground: '#ffffff',
-  text: '#1a1a2e',
-  lightText: '#888888',
-  border: '#e0e0e0',
-  success: '#34a853',
-  warning: '#f9ab00',
-  error: '#ea4335',
-  activeTab: '#1a73e8',
+  // Brand
+  primary: '#bcdc44',          // Leaf green — CTAs, active states, highlights
+  primaryDark: '#a8c93a',      // Leaf hover state
+  primaryText: '#212121',      // Text on leaf-green backgrounds
+
+  // Surfaces
+  background: '#f5f5f5',       // Gray 100 — page background
+  cardBackground: '#ffffff',   // White — card surfaces
+
+  // Text
+  text: '#212121',             // Gray 900 — primary text
+  lightText: '#757575',        // Gray 600 — secondary / meta text
+
+  // Borders & structure
+  border: '#e0e0e0',           // Gray 300 — borders, dividers
+  borderStrong: '#bdbdbd',     // Gray 400 — emphasized borders
+
+  // Semantic
+  success: '#388e3c',
+  warning: '#f57c00',
+  error: '#d32f2f',
+
+  // Tab aliases
+  activeTab: '#bcdc44',
   tabBorder: '#e0e0e0',
 };
 
+// ─── Skeleton shimmer animation ────────────────────────────────────────────
+const shimmer = keyframes`
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+`;
+
+export const SkeletonBlock = styled.div<{ width?: string; height?: string }>`
+  width: ${({ width }) => width ?? '100%'};
+  height: ${({ height }) => height ?? '16px'};
+  border-radius: 4px;
+  background: linear-gradient(90deg, #eeeeee 25%, #f5f5f5 50%, #eeeeee 75%);
+  background-size: 800px 100%;
+  animation: ${shimmer} 1.4s ease-in-out infinite;
+`;
+
+// ─── App shell ─────────────────────────────────────────────────────────────
 export const AppContainer = styled.div`
-  font-family: 'Source Sans Pro', 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Nunito Sans', 'Segoe UI', sans-serif;
   max-width: 1400px;
   margin: 0 auto;
   background: ${colors.background};
@@ -23,28 +54,50 @@ export const AppContainer = styled.div`
   color: ${colors.text};
 `;
 
+// ─── Header ────────────────────────────────────────────────────────────────
 export const Header = styled.header`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px 16px;
+  padding: 16px 24px;
   background: ${colors.cardBackground};
   border-bottom: 1px solid ${colors.border};
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+
+  /* BambooHR brand accent — thin green stripe at top */
+  border-top: 3px solid ${colors.primary};
 `;
 
-export const HeaderLeft = styled.div``;
+export const HeaderLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  /* Green leaf accent mark to the left of the title */
+  &::before {
+    content: '';
+    display: block;
+    width: 4px;
+    height: 32px;
+    background: ${colors.primary};
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+`;
 
 export const Title = styled.h1`
-  font-size: 22px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
   margin: 0 0 2px;
   color: ${colors.text};
+  letter-spacing: -0.3px;
 `;
 
 export const Subtitle = styled.p`
   font-size: 12px;
   color: ${colors.lightText};
   margin: 0;
+  font-weight: 400;
 `;
 
 export const HeaderActions = styled.div`
@@ -52,23 +105,47 @@ export const HeaderActions = styled.div`
   gap: 8px;
 `;
 
-export const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
+// ─── Buttons ───────────────────────────────────────────────────────────────
+export const Button = styled.button<{ variant?: 'primary' | 'secondary' | 'tertiary' }>`
   padding: 7px 14px;
   border-radius: 6px;
   font-size: 13px;
+  font-family: 'Nunito Sans', sans-serif;
+  font-weight: 600;
   cursor: pointer;
-  border: 1px solid ${({ variant }) => variant === 'primary' ? colors.primary : colors.border};
-  background: ${({ variant }) => variant === 'primary' ? colors.primary : colors.cardBackground};
-  color: ${({ variant }) => variant === 'primary' ? '#fff' : colors.text};
-  &:hover {
-    opacity: 0.85;
-  }
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+  white-space: nowrap;
+
+  ${({ variant }) => {
+    if (variant === 'primary') return `
+      background: #bcdc44;
+      color: #212121;
+      border: none;
+      &:hover { background: #a8c93a; }
+      &:focus-visible { outline: 2px solid #bcdc44; outline-offset: 2px; }
+    `;
+    if (variant === 'tertiary') return `
+      background: transparent;
+      color: #757575;
+      border: none;
+      &:hover { color: #212121; }
+    `;
+    // default = secondary (outline)
+    return `
+      background: #ffffff;
+      color: #212121;
+      border: 1px solid #e0e0e0;
+      &:hover { border-color: #bdbdbd; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+      &:focus-visible { outline: 2px solid #bcdc44; outline-offset: 2px; }
+    `;
+  }}
 `;
 
+// ─── Tabs ──────────────────────────────────────────────────────────────────
 export const TabBar = styled.div`
   display: flex;
   background: ${colors.cardBackground};
-  border-bottom: 2px solid ${colors.tabBorder};
+  border-bottom: 1px solid ${colors.tabBorder};
   padding: 0 24px;
   overflow-x: auto;
   gap: 4px;
@@ -78,31 +155,43 @@ export const TabBar = styled.div`
 export const Tab = styled.button<{ active: boolean }>`
   padding: 12px 16px;
   font-size: 13px;
-  font-weight: ${({ active }) => active ? '600' : '400'};
-  color: ${({ active }) => active ? colors.activeTab : colors.lightText};
+  font-family: 'Nunito Sans', sans-serif;
+  font-weight: ${({ active }) => active ? '700' : '400'};
+  color: ${({ active }) => active ? colors.text : colors.lightText};
   border: none;
-  border-bottom: 2px solid ${({ active }) => active ? colors.activeTab : 'transparent'};
-  margin-bottom: -2px;
+  border-bottom: 3px solid ${({ active }) => active ? colors.activeTab : 'transparent'};
+  margin-bottom: -1px;
   background: transparent;
   cursor: pointer;
   white-space: nowrap;
-  &:hover { color: ${colors.activeTab}; }
+  transition: color 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    color: ${colors.text};
+  }
+  &:focus-visible {
+    outline: 2px solid ${colors.primary};
+    outline-offset: -2px;
+    border-radius: 2px;
+  }
 `;
 
+// ─── Content area ──────────────────────────────────────────────────────────
 export const ContentArea = styled.div`
-  padding: 20px 24px;
+  padding: 24px;
   @media (max-width: 600px) { padding: 16px 12px; }
 `;
 
 export const AreaHeader = styled.div`
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 `;
 
 export const AreaTitle = styled.h2`
-  font-size: 17px;
-  font-weight: 600;
-  margin: 0 0 3px;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 4px;
   color: ${colors.text};
+  letter-spacing: -0.2px;
 `;
 
 export const AreaDescription = styled.p`
@@ -111,6 +200,7 @@ export const AreaDescription = styled.p`
   margin: 0;
 `;
 
+// ─── Metric cards ──────────────────────────────────────────────────────────
 export const MetricCardGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -124,28 +214,35 @@ export const CardContainer = styled.div`
   border: 1px solid ${colors.border};
   border-radius: 8px;
   padding: 16px;
-  transition: box-shadow 0.15s ease;
-  &:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border-color: ${colors.borderStrong};
+  }
 `;
 
 export const CardLabel = styled.div`
-  font-size: 10px;
+  font-size: 11px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
   color: ${colors.lightText};
   margin-bottom: 8px;
 `;
 
 export const CardValue = styled.div`
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 700;
   color: ${colors.text};
   line-height: 1;
+  letter-spacing: -0.5px;
 `;
 
 export const CardTrend = styled.div<{ positive?: boolean }>`
   font-size: 11px;
-  margin-top: 6px;
+  font-weight: 600;
+  margin-top: 8px;
   color: ${({ positive }) => positive ? colors.success : colors.lightText};
 `;
 
@@ -155,6 +252,7 @@ export const CardPlaceholder = styled.div`
   color: ${colors.lightText};
 `;
 
+// ─── Feature usage bars ────────────────────────────────────────────────────
 export const FeatureSection = styled.div`
   background: ${colors.cardBackground};
   border: 1px solid ${colors.border};
@@ -164,9 +262,23 @@ export const FeatureSection = styled.div`
 
 export const FeatureSectionTitle = styled.div`
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   color: ${colors.text};
   margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  /* Green accent dot */
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: ${colors.primary};
+    flex-shrink: 0;
+  }
 `;
 
 export const FeatureRowContainer = styled.div`
@@ -180,6 +292,7 @@ export const FeatureRowContainer = styled.div`
 
 export const FeatureLabel = styled.div`
   font-size: 12px;
+  font-weight: 400;
   color: ${colors.text};
   width: 180px;
   flex-shrink: 0;
@@ -204,11 +317,13 @@ export const BarFill = styled.div<{ width: number }>`
 
 export const FeaturePercent = styled.div`
   font-size: 12px;
+  font-weight: 600;
   color: ${colors.text};
   width: 36px;
   text-align: right;
 `;
 
+// ─── Charts ────────────────────────────────────────────────────────────────
 export const ChartGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -226,7 +341,7 @@ export const ChartSection = styled.div`
 
 export const ChartTitle = styled.div`
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   color: ${colors.text};
   margin-bottom: 12px;
 `;
@@ -245,30 +360,33 @@ export const ErrorText = styled.div`
   color: ${colors.lightText};
 `;
 
-// Modal
+// ─── Modal ─────────────────────────────────────────────────────────────────
 export const ModalOverlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0,0,0,0.35);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  backdrop-filter: blur(2px);
 `;
 
 export const ModalBox = styled.div`
   background: ${colors.cardBackground};
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 24px;
   min-width: 320px;
   max-width: 480px;
   width: 100%;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.16);
 `;
 
 export const ModalTitle = styled.h2`
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 700;
   margin: 0 0 16px;
+  color: ${colors.text};
 `;
 
 export const ToggleRow = styled.div`
@@ -294,6 +412,8 @@ export const ToggleSwitch = styled.button<{ on: boolean }>`
   cursor: pointer;
   position: relative;
   transition: background 0.2s;
+  flex-shrink: 0;
+
   &::after {
     content: '';
     position: absolute;
@@ -304,5 +424,11 @@ export const ToggleSwitch = styled.button<{ on: boolean }>`
     border-radius: 50%;
     background: white;
     transition: left 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${colors.primary};
+    outline-offset: 2px;
   }
 `;

@@ -6,7 +6,7 @@ import styled from 'styled-components';
 import {
   colors, ContentArea, AreaHeader, AreaTitle, AreaDescription,
   ChartSection, ChartTitle, ChartPlaceholder, MetricCardGrid,
-  CardContainer, CardLabel, CardValue,
+  CardContainer, CardLabel, CardValue, CardTrend,
 } from '../styles/StyledComponents';
 
 interface JobRow {
@@ -172,6 +172,13 @@ function fmtInsightVal(n: number, isRevenue: boolean): string {
 function latestVal(arr: any[], key: string): number | null {
   for (let i = arr.length - 1; i >= 0; i--) {
     if (arr[i][key] !== null) return arr[i][key];
+  }
+  return null;
+}
+
+function latestWeek(arr: any[], key: string): string | null {
+  for (let i = arr.length - 1; i >= 0; i--) {
+    if (arr[i][key] !== null) return arr[i].week ?? null;
   }
   return null;
 }
@@ -404,10 +411,16 @@ const PaidJobAdsDashboard: React.FC<{ refreshKey: number }> = ({ refreshKey }) =
             <CardContainer>
               <CardLabel>LI Monthly Revenue</CardLabel>
               <CardValue>{fmtRevenue(latestVal(jobs, 'liRevenue'))}</CardValue>
+              {latestWeek(jobs, 'liRevenue') && (
+                <CardTrend>Week of {latestWeek(jobs, 'liRevenue')}</CardTrend>
+              )}
             </CardContainer>
             <CardContainer>
               <CardLabel>BHR Revenue</CardLabel>
               <CardValue>{fmtRevenue(latestVal(jobs, 'bhrRevenue'))}</CardValue>
+              {latestWeek(jobs, 'bhrRevenue') && (
+                <CardTrend>Week of {latestWeek(jobs, 'bhrRevenue')}</CardTrend>
+              )}
             </CardContainer>
             <CardContainer>
               <CardLabel>Jobs Posted to LI</CardLabel>
@@ -421,10 +434,7 @@ const PaidJobAdsDashboard: React.FC<{ refreshKey: number }> = ({ refreshKey }) =
               <CardLabel>Applicants</CardLabel>
               <CardValue>{fmt(latestVal(jobs, 'applicants'))}</CardValue>
             </CardContainer>
-            <CardContainer>
-              <CardLabel>Hired</CardLabel>
-              <CardValue>{fmt(latestVal(jobs, 'hired'))}</CardValue>
-            </CardContainer>
+
           </MetricCardGrid>
 
           <SectionTitle>Revenue</SectionTitle>

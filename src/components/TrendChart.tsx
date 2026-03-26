@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { TrendChartConfig } from '../types';
-import { ChartSection, ChartTitle, ChartPlaceholder, colors } from '../styles/StyledComponents';
+import { ChartSection, ChartTitle, ChartPlaceholder, SkeletonBlock, colors } from '../styles/StyledComponents';
 import QoQInsight from './QoQInsight';
 
 interface Props {
@@ -42,7 +42,7 @@ const TrendChart: React.FC<Props> = ({ config, refreshKey }) => {
   return (
     <ChartSection>
       <ChartTitle>{config.label}</ChartTitle>
-      {loading && <ChartPlaceholder>Loading…</ChartPlaceholder>}
+      {loading && <SkeletonBlock height="180px" />}
       {!loading && (error || data.length === 0) && (
         <ChartPlaceholder>No data available</ChartPlaceholder>
       )}
@@ -63,7 +63,7 @@ const TrendChart: React.FC<Props> = ({ config, refreshKey }) => {
               allowDecimals={false}
             />
             <Tooltip
-              contentStyle={{ fontSize: 12, border: `1px solid ${colors.border}`, borderRadius: 6 }}
+              contentStyle={{ fontSize: 12, fontFamily: "'Nunito Sans', sans-serif", border: `1px solid ${colors.border}`, borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
               labelStyle={{ color: colors.lightText }}
             />
             <Line
