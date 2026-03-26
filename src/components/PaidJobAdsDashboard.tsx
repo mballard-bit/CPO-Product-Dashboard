@@ -102,6 +102,54 @@ const InsightText = styled.p`
   font-style: italic;
 `;
 
+const NpsSection = styled.div`
+  background: ${colors.cardBackground};
+  border: 1px solid ${colors.border};
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 12px;
+`;
+
+const NpsComment = styled.div`
+  padding: 12px 0;
+  border-bottom: 1px solid ${colors.border};
+  &:last-child { border-bottom: none; padding-bottom: 0; }
+  &:first-child { padding-top: 0; }
+`;
+
+const NpsCommentText = styled.p`
+  font-size: 13px;
+  line-height: 1.6;
+  color: ${colors.text};
+  margin: 0 0 6px;
+`;
+
+const NpsMeta = styled.div`
+  display: flex;
+  gap: 12px;
+  align-items: center;
+`;
+
+const NpsScore = styled.span<{ score: number | null }>`
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: ${({ score }) =>
+    score === null ? colors.border :
+    score >= 9 ? '#e6f4ea' :
+    score >= 7 ? '#fef7e0' : '#fce8e6'};
+  color: ${({ score }) =>
+    score === null ? colors.lightText :
+    score >= 9 ? colors.success :
+    score >= 7 ? colors.warning : colors.error};
+`;
+
+const NpsDate = styled.span`
+  font-size: 11px;
+  color: ${colors.lightText};
+`;
+
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 function fmtRevenue(n: number | null): string {
@@ -304,10 +352,19 @@ const RevenueChart: React.FC<{ data: JobRow[] }> = ({ data }) => {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
+interface NpsComment {
+  text: string;
+  score: number | null;
+  date: string | null;
+  visitorId: string | null;
+}
+
 const PaidJobAdsDashboard: React.FC<{ refreshKey: number }> = ({ refreshKey }) => {
   const [data, setData] = useState<SheetData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [npsComments, setNpsComments] = useState<NpsComment[]>([]);
+  const [npsLoading, setNpsLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
@@ -317,6 +374,13 @@ const PaidJobAdsDashboard: React.FC<{ refreshKey: number }> = ({ refreshKey }) =
       .then(d => setData(d))
       .catch(() => setError(true))
       .finally(() => setLoading(false));
+
+    setNpsLoading(true);
+    fetch('/api/pendo/nps-comments?keywords=job+ads,linkedin,job+posting,paid+job&limit=3')
+      .then(r => r.ok ? r.json() : [])
+      .then(d => setNpsComments(Array.isArray(d) ? d : []))
+      .catch(() => setNpsComments([]))
+      .finally(() => setNpsLoading(false));
   }, [refreshKey]);
 
   const jobs = data?.jobs ?? [];
@@ -391,6 +455,24 @@ const PaidJobAdsDashboard: React.FC<{ refreshKey: number }> = ({ refreshKey }) =
             <SimpleChart data={jobs} dataKey="applicants" label="Applicants" color={colors.primary} />
             <SimpleChart data={jobs} dataKey="hired" label="Hired" color={colors.success} />
           </ChartGrid>
+
+          <SectionTitle>Customer Voice</SectionTitle>
+          <SectionDescription>Recent NPS comments mentioning job ads or LinkedIn</SectionDescription>
+          <NpsSection>
+            {npsLoading && <ChartPlaceholder style={{ height: 60 }}>Loading comments…</ChartPlaceholder>}
+            {!npsLoading && npsComments.length === 0 && (
+              <ChartPlaceholder style={{ height: 60 }}>No recent NPS comments found mentioning job ads</ChartPlaceholder>
+            )}
+            {!npsLoading && npsComments.map((c, i) => (
+              <NpsComment key={i}>
+                <NpsCommentText>"{c.text}"</NpsCommentText>
+                <NpsMeta>
+                  {c.score !== null && <NpsScore score={c.score}>NPS {c.score}</NpsScore>}
+                  {c.date && <NpsDate>{c.date}</NpsDate>}
+                </NpsMeta>
+              </NpsComment>
+            ))}
+          </NpsSection>
         </>
       )}
     </ContentArea>

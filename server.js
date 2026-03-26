@@ -524,6 +524,67 @@ app.get('/api/sheets/paid-job-ads', async (req, res) => {
   }
 });
 
+// GET /api/pendo/nps-comments?keywords=job+ads,linkedin
+// Returns recent NPS responses whose comment text matches any of the given keywords
+app.get('/api/pendo/nps-comments', async (req, res) => {
+  try {
+    const keywords = (req.query.keywords || 'job ads,linkedin,job posting,paid job')
+      .split(',').map(k => k.trim().toLowerCase()).filter(Boolean);
+    const limit = Math.min(10, parseInt(req.query.limit, 10) || 3);
+
+    const cacheKey = `nps-comments:${keywords.join('|')}:${limit}`;
+    const cached = getCached(cacheKey);
+    if (cached) return res.json(cached);
+
+    // Fetch recent NPS responses (last 180 days)
+    const startMs = Date.now() - 180 * 24 * 60 * 60 * 1000;
+    const response = await axios.post(
+      `${PENDO_BASE}/aggregation`,
+      {
+        response: { mimeType: 'application/json' },
+        request: {
+          pipeline: [
+            {
+              source: {
+                npsResponses: { appId: PENDO_APP_ID },
+                timeSeries: { period: 'dayRange', first: startMs, count: 180 },
+              },
+            },
+            { filter: 'text != null && text != ""' },
+            {
+              sort: [{ browserTime: -1 }],
+            },
+            { limit: { limit: 500 } },
+          ],
+        },
+      },
+      { headers: pendoHeaders }
+    );
+
+    const rows = response.data?.results ?? [];
+
+    // Filter to comments that mention any of the keywords
+    const matched = rows
+      .filter(r => {
+        const text = (r.text || '').toLowerCase();
+        return keywords.some(k => text.includes(k));
+      })
+      .slice(0, limit)
+      .map(r => ({
+        text: r.text,
+        score: r.rating ?? r.score ?? null,
+        date: r.browserTime ? new Date(r.browserTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null,
+        visitorId: r.visitorId ?? null,
+      }));
+
+    setCached(cacheKey, matched, 30 * 60 * 1000); // 30-minute cache
+    res.json(matched);
+  } catch (error) {
+    console.error('NPS comments error:', error.message);
+    res.status(500).json({ error: 'Failed to fetch NPS comments' });
+  }
+});
+
 // Note: segmentId filtering is not implemented in v1 — add a conditional pipeline
 // filter stage to each endpoint when segment-based views are needed.
 app.listen(PORT, () => {
