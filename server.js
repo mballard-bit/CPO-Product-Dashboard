@@ -483,8 +483,13 @@ app.get('/api/sheets/paid-job-ads', async (req, res) => {
       return parseFloat(String(val).replace(/[$,%]/g, '').replace(/,/g, '')) || null;
     }
 
-    // Skip the EA row (row index 1) — it's a label/annotation row, not real data
-    const dataRows = rows.slice(2).filter(r => r[0] && r[0] !== 'EA' && r[0] !== '');
+    // Skip the EA row (row index 1) — it's a label/annotation row, not real data.
+    // Keep rows where either the ATS date (col A/index 0) OR the Jobs date
+    // (col M/index 12) is present — the two tables may not have identical row ranges.
+    const dataRows = rows.slice(2).filter(r =>
+      (r[0] && r[0] !== 'EA' && r[0] !== '') ||
+      (r[12] && r[12] !== 'EA' && r[12] !== '')
+    );
 
     // Left table: ATS / Interview metrics (columns 0-9)
     const ats = dataRows.map(r => ({
@@ -582,6 +587,25 @@ app.get('/api/pendo/nps-comments', async (req, res) => {
   } catch (error) {
     console.error('NPS comments error:', error.message);
     res.status(500).json({ error: 'Failed to fetch NPS comments' });
+  }
+});
+
+// GET /api/sheets/global-employment
+// Returns data from the "invites/Starts by month" tab
+app.get('/api/sheets/global-employment', async (req, res) => {
+  try {
+    const client = await sheetsAuth.getClient();
+    const sheets = google.sheets({ version: 'v4', auth: client });
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: '19nbeemZFUO28kurH3ASXGaIzYHLAbWjSgzo8ezotTck',
+      range: "'invites/Starts by month'!A1:Z",
+    });
+    const rows = response.data.values ?? [];
+    // Return first 5 rows raw for inspection
+    res.json({ totalRows: rows.length, first5: rows.slice(0, 5) });
+  } catch (error) {
+    console.error('Global Employment Sheets error:', error.message);
+    res.status(500).json({ error: error.message });
   }
 });
 

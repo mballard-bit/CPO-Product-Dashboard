@@ -23,8 +23,13 @@ module.exports = async function handler(req, res) {
     const rows = response.data.values ?? [];
     if (rows.length < 2) return res.json({ ats: [], jobs: [] });
 
-    // Skip the EA annotation row (index 1); real data starts at index 2
-    const dataRows = rows.slice(2).filter(r => r[0] && r[0] !== 'EA' && r[0] !== '');
+    // Skip the EA annotation row (index 1); real data starts at index 2.
+    // Keep rows where either the ATS date (col A/index 0) OR the Jobs date
+    // (col M/index 12) is present — the two tables may not have identical row ranges.
+    const dataRows = rows.slice(2).filter(r =>
+      (r[0] && r[0] !== 'EA' && r[0] !== '') ||
+      (r[12] && r[12] !== 'EA' && r[12] !== '')
+    );
 
     const ats = dataRows.map(r => ({
       week: r[0] ?? '',
