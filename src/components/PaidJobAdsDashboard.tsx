@@ -322,7 +322,7 @@ const PaidJobAdsDashboard: React.FC<{ refreshKey: number }> = ({ refreshKey }) =
   const jobs = data?.jobs ?? [];
   const ytdYear = new Date().getFullYear();
   const weeksElapsed = Math.ceil((Date.now() - new Date(ytdYear, 0, 1).getTime()) / (7 * 24 * 60 * 60 * 1000));
-  const ytdRevenue = jobs.slice(-weeksElapsed).reduce((sum, r) => sum + (r.liRevenue ?? 0), 0);
+  const ytdRevenue = jobs.slice(-weeksElapsed).reduce((sum, r) => sum + (r.bhrRevenue ?? 0), 0);
 
   return (
     <ContentArea>
@@ -350,7 +350,7 @@ const PaidJobAdsDashboard: React.FC<{ refreshKey: number }> = ({ refreshKey }) =
               <CardValue>{fmt(latestVal(jobs, 'jobsPostedToLI'))}</CardValue>
             </CardContainer>
             <CardContainer>
-              <CardLabel>YTD Revenue ({ytdYear})</CardLabel>
+              <CardLabel>YTD BHR Revenue ({ytdYear})</CardLabel>
               <CardValue>{fmtRevenue(ytdRevenue)}</CardValue>
             </CardContainer>
             <CardContainer>
