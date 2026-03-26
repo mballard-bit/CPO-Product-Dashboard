@@ -3,19 +3,11 @@ import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend,
 } from 'recharts';
 import styled from 'styled-components';
-import { colors, ContentArea, AreaHeader, AreaTitle, AreaDescription, ChartSection, ChartTitle, ChartPlaceholder, MetricCardGrid, CardContainer, CardLabel, CardValue } from '../styles/StyledComponents';
-
-interface AtsRow {
-  week: string;
-  atsCustomers: number | null;
-  calConnected: number | null;
-  customersInviting: number | null;
-  interviewsScheduled: number | null;
-  interviewsPerActive: number | null;
-  pctScheduling: number | null;
-  invitesSent: number | null;
-  acceptanceRate: number | null;
-}
+import {
+  colors, ContentArea, AreaHeader, AreaTitle, AreaDescription,
+  ChartSection, ChartTitle, ChartPlaceholder, MetricCardGrid,
+  CardContainer, CardLabel, CardValue,
+} from '../styles/StyledComponents';
 
 interface JobRow {
   week: string;
@@ -33,7 +25,7 @@ interface JobRow {
 }
 
 interface SheetData {
-  ats: AtsRow[];
+  ats: any[];
   jobs: JobRow[];
 }
 
@@ -45,25 +37,34 @@ const ChartGrid = styled.div`
   @media (max-width: 900px) { grid-template-columns: 1fr; }
 `;
 
+const FullWidthChart = styled.div`
+  margin-top: 12px;
+`;
+
 const SectionTitle = styled.div`
   font-size: 14px;
   font-weight: 600;
   color: ${colors.text};
-  margin: 20px 0 10px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid ${colors.border};
+  margin: 24px 0 2px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid ${colors.border};
 `;
 
-function fmt(n: number | null): string {
-  if (n === null) return '—';
-  if (n >= 1000000) return `$${(n / 1000000).toFixed(1)}M`;
-  if (n >= 1000) return n >= 10000 ? `${(n / 1000).toFixed(0)}k` : `${(n / 1000).toFixed(1)}k`;
-  return n.toString();
-}
+const SectionDescription = styled.div`
+  font-size: 12px;
+  color: ${colors.lightText};
+  margin-bottom: 10px;
+`;
 
 function fmtRevenue(n: number | null): string {
   if (n === null) return '—';
   return `$${n.toLocaleString()}`;
+}
+
+function fmt(n: number | null): string {
+  if (n === null) return '—';
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
+  return n.toString();
 }
 
 function latestVal(arr: any[], key: string): number | null {
@@ -73,7 +74,8 @@ function latestVal(arr: any[], key: string): number | null {
   return null;
 }
 
-const TICK_STYLE = { fontSize: 10, fill: colors.lightText };
+const TICK = { fontSize: 10, fill: colors.lightText };
+const TOOLTIP_STYLE = { fontSize: 12, border: `1px solid ${colors.border}`, borderRadius: 6 };
 
 interface SimpleChartProps {
   data: any[];
@@ -97,14 +99,44 @@ const SimpleChart: React.FC<SimpleChartProps> = ({ data, dataKey, label, color =
       <ResponsiveContainer width="100%" height={160}>
         <LineChart data={filled} margin={{ top: 4, right: 8, bottom: 0, left: -20 }}>
           <CartesianGrid strokeDasharray="3 3" stroke={colors.border} />
-          <XAxis dataKey="week" tick={TICK_STYLE} tickLine={false} interval="preserveStartEnd" />
-          <YAxis tick={TICK_STYLE} tickLine={false} axisLine={false} allowDecimals={false}
+          <XAxis dataKey="week" tick={TICK} tickLine={false} interval="preserveStartEnd" />
+          <YAxis tick={TICK} tickLine={false} axisLine={false} allowDecimals={false}
             tickFormatter={formatter} />
-          <Tooltip contentStyle={{ fontSize: 12, border: `1px solid ${colors.border}`, borderRadius: 6 }}
-            labelStyle={{ color: colors.lightText }}
-            formatter={formatter ? (v: number) => formatter(v) : undefined} />
-          <Line type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2} dot={false}
-            activeDot={{ r: 4 }} name={label} />
+          <Tooltip contentStyle={TOOLTIP_STYLE} labelStyle={{ color: colors.lightText }}
+            formatter={formatter ? (v: number) => [formatter(v), label] : undefined} />
+          <Line type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2}
+            dot={false} activeDot={{ r: 4 }} name={label} />
+        </LineChart>
+      </ResponsiveContainer>
+    </ChartSection>
+  );
+};
+
+// Combined revenue chart showing LI Revenue + BHR Revenue on one chart
+const RevenueChart: React.FC<{ data: JobRow[] }> = ({ data }) => {
+  const filled = data.filter(d => d.liRevenue !== null || d.bhrRevenue !== null);
+  if (filled.length === 0) return (
+    <ChartSection>
+      <ChartTitle>Revenue Over Time</ChartTitle>
+      <ChartPlaceholder>No data</ChartPlaceholder>
+    </ChartSection>
+  );
+  return (
+    <ChartSection>
+      <ChartTitle>Revenue Over Time</ChartTitle>
+      <ResponsiveContainer width="100%" height={200}>
+        <LineChart data={filled} margin={{ top: 4, right: 16, bottom: 0, left: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke={colors.border} />
+          <XAxis dataKey="week" tick={TICK} tickLine={false} interval="preserveStartEnd" />
+          <YAxis tick={TICK} tickLine={false} axisLine={false}
+            tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} />
+          <Tooltip contentStyle={TOOLTIP_STYLE} labelStyle={{ color: colors.lightText }}
+            formatter={(v: number) => [`$${v.toLocaleString()}`, '']} />
+          <Legend wrapperStyle={{ fontSize: 11 }} />
+          <Line type="monotone" dataKey="liRevenue" stroke={colors.success} strokeWidth={2}
+            dot={false} activeDot={{ r: 4 }} name="LI Monthly Revenue" />
+          <Line type="monotone" dataKey="bhrRevenue" stroke={colors.primary} strokeWidth={2}
+            dot={false} activeDot={{ r: 4 }} name="BHR Revenue" />
         </LineChart>
       </ResponsiveContainer>
     </ChartSection>
@@ -126,18 +158,13 @@ const PaidJobAdsDashboard: React.FC<{ refreshKey: number }> = ({ refreshKey }) =
       .finally(() => setLoading(false));
   }, [refreshKey]);
 
-  const latestLiRevenue = latestVal(data?.jobs ?? [], 'liRevenue');
-  const latestBhrRevenue = latestVal(data?.jobs ?? [], 'bhrRevenue');
-  const latestJobsPosted = latestVal(data?.jobs ?? [], 'jobsPosted');
-  const latestInterviews = latestVal(data?.ats ?? [], 'interviewsScheduled');
-  const latestInvites = latestVal(data?.ats ?? [], 'invitesSent');
-  const latestAcceptance = latestVal(data?.ats ?? [], 'acceptanceRate');
+  const jobs = data?.jobs ?? [];
 
   return (
     <ContentArea>
       <AreaHeader>
         <AreaTitle>Paid Job Ads</AreaTitle>
-        <AreaDescription>LinkedIn job posting usage, revenue, and ATS interview scheduling — sourced from Google Sheets</AreaDescription>
+        <AreaDescription>LinkedIn Paid Job Ads — adoption, views, applications, and revenue · Sourced from Google Sheets</AreaDescription>
       </AreaHeader>
 
       {loading && <ChartPlaceholder>Loading…</ChartPlaceholder>}
@@ -145,52 +172,65 @@ const PaidJobAdsDashboard: React.FC<{ refreshKey: number }> = ({ refreshKey }) =
 
       {!loading && !error && data && (
         <>
+          {/* Summary metric cards */}
           <MetricCardGrid>
             <CardContainer>
               <CardLabel>LI Monthly Revenue</CardLabel>
-              <CardValue>{fmtRevenue(latestLiRevenue)}</CardValue>
+              <CardValue>{fmtRevenue(latestVal(jobs, 'liRevenue'))}</CardValue>
             </CardContainer>
             <CardContainer>
               <CardLabel>BHR Revenue</CardLabel>
-              <CardValue>{fmtRevenue(latestBhrRevenue)}</CardValue>
+              <CardValue>{fmtRevenue(latestVal(jobs, 'bhrRevenue'))}</CardValue>
             </CardContainer>
             <CardContainer>
-              <CardLabel>Jobs Posted (Est)</CardLabel>
-              <CardValue>{fmt(latestJobsPosted)}</CardValue>
+              <CardLabel>Jobs Posted to LI</CardLabel>
+              <CardValue>{fmt(latestVal(jobs, 'jobsPostedToLI'))}</CardValue>
             </CardContainer>
             <CardContainer>
-              <CardLabel>Interviews Scheduled</CardLabel>
-              <CardValue>{fmt(latestInterviews)}</CardValue>
+              <CardLabel>Total Views</CardLabel>
+              <CardValue>{fmt(latestVal(jobs, 'views'))}</CardValue>
             </CardContainer>
             <CardContainer>
-              <CardLabel>Invites Sent</CardLabel>
-              <CardValue>{fmt(latestInvites)}</CardValue>
+              <CardLabel>Applicants</CardLabel>
+              <CardValue>{fmt(latestVal(jobs, 'applicants'))}</CardValue>
             </CardContainer>
             <CardContainer>
-              <CardLabel>Acceptance Rate</CardLabel>
-              <CardValue>{latestAcceptance !== null ? `${latestAcceptance}%` : '—'}</CardValue>
+              <CardLabel>Hired</CardLabel>
+              <CardValue>{fmt(latestVal(jobs, 'hired'))}</CardValue>
             </CardContainer>
           </MetricCardGrid>
 
-          <SectionTitle>LinkedIn Job Posting</SectionTitle>
+          {/* Revenue */}
+          <SectionTitle>Revenue</SectionTitle>
+          <SectionDescription>LinkedIn and BHR revenue trends over time</SectionDescription>
+          <FullWidthChart>
+            <RevenueChart data={jobs} />
+          </FullWidthChart>
+
+          {/* Adoption */}
+          <SectionTitle>Adoption</SectionTitle>
+          <SectionDescription>How many customers are posting jobs and reaching LinkedIn</SectionDescription>
           <ChartGrid>
-            <SimpleChart data={data.jobs} dataKey="liRevenue" label="LI Monthly Revenue"
-              color={colors.success} formatter={v => `$${v.toLocaleString()}`} />
-            <SimpleChart data={data.jobs} dataKey="bhrRevenue" label="BHR Revenue"
-              color={colors.primary} formatter={v => `$${v.toLocaleString()}`} />
-            <SimpleChart data={data.jobs} dataKey="jobsPosted" label="Jobs Posted (Est)" />
-            <SimpleChart data={data.jobs} dataKey="views" label="Job Views" />
-            <SimpleChart data={data.jobs} dataKey="applicants" label="Applicants" />
-            <SimpleChart data={data.jobs} dataKey="hired" label="Hired" color={colors.success} />
+            <SimpleChart data={jobs} dataKey="jobsPostedToLI" label="Jobs Posted to LinkedIn" />
+            <SimpleChart data={jobs} dataKey="customersPosted" label="Customers Posted" color={colors.warning} />
+            <SimpleChart data={jobs} dataKey="firstTimePosting" label="First Time Posting" color={colors.success} />
+            <SimpleChart data={jobs} dataKey="pctOfJobsPosted" label="% of Jobs Posted to LI"
+              formatter={v => `${v.toFixed(2)}%`} />
           </ChartGrid>
 
-          <SectionTitle>ATS Interview Scheduling</SectionTitle>
+          {/* Views */}
+          <SectionTitle>Views</SectionTitle>
+          <SectionDescription>Job listing visibility on LinkedIn</SectionDescription>
+          <FullWidthChart>
+            <SimpleChart data={jobs} dataKey="views" label="Total Job Views" color={colors.primary} />
+          </FullWidthChart>
+
+          {/* Applications */}
+          <SectionTitle>Applications</SectionTitle>
+          <SectionDescription>Applicant volume and hiring outcomes</SectionDescription>
           <ChartGrid>
-            <SimpleChart data={data.ats} dataKey="interviewsScheduled" label="Interviews Scheduled" />
-            <SimpleChart data={data.ats} dataKey="invitesSent" label="Invites Sent" />
-            <SimpleChart data={data.ats} dataKey="customersInviting" label="Customers Inviting" />
-            <SimpleChart data={data.ats} dataKey="acceptanceRate" label="Acceptance Rate %"
-              formatter={v => `${v}%`} />
+            <SimpleChart data={jobs} dataKey="applicants" label="Applicants" color={colors.primary} />
+            <SimpleChart data={jobs} dataKey="hired" label="Hired" color={colors.success} />
           </ChartGrid>
         </>
       )}
