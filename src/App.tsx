@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from 'react';
 import AREAS from './config/areaConfig';
-import TabNav from './components/TabNav';
 import AreaDashboard from './components/AreaDashboard';
 import AreaSettings from './components/AreaSettings';
 import PaidJobAdsDashboard from './components/PaidJobAdsDashboard';

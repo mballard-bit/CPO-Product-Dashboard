@@ -359,7 +359,7 @@ const RevenueChart: React.FC<{ data: JobRow[] }> = ({ data }) => {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-interface NpsComment {
+interface NpsCommentData {
   text: string;
   score: number | null;
   date: string | null;
@@ -370,7 +370,7 @@ const PaidJobAdsDashboard: React.FC<{ refreshKey: number }> = ({ refreshKey }) =
   const [data, setData] = useState<SheetData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [npsComments, setNpsComments] = useState<NpsComment[]>([]);
+  const [npsComments, setNpsComments] = useState<NpsCommentData[]>([]);
   const [npsLoading, setNpsLoading] = useState(true);
 
   useEffect(() => {
