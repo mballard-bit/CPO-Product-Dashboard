@@ -91,6 +91,7 @@ export const Tab = styled.button<{ active: boolean }>`
 
 export const ContentArea = styled.div`
   padding: 20px 24px;
+  @media (max-width: 600px) { padding: 16px 12px; }
 `;
 
 export const AreaHeader = styled.div`
@@ -112,9 +113,10 @@ export const AreaDescription = styled.p`
 
 export const MetricCardGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 12px;
   margin-bottom: 16px;
+  @media (max-width: 600px) { grid-template-columns: repeat(2, 1fr); }
 `;
 
 export const CardContainer = styled.div`
@@ -122,6 +124,8 @@ export const CardContainer = styled.div`
   border: 1px solid ${colors.border};
   border-radius: 8px;
   padding: 16px;
+  transition: box-shadow 0.15s ease;
+  &:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
 `;
 
 export const CardLabel = styled.div`
@@ -171,6 +175,7 @@ export const FeatureRowContainer = styled.div`
   gap: 12px;
   margin-bottom: 10px;
   &:last-child { margin-bottom: 0; }
+  @media (max-width: 600px) { flex-wrap: wrap; }
 `;
 
 export const FeatureLabel = styled.div`
@@ -178,6 +183,7 @@ export const FeatureLabel = styled.div`
   color: ${colors.text};
   width: 180px;
   flex-shrink: 0;
+  @media (max-width: 600px) { width: 100%; }
 `;
 
 export const BarTrack = styled.div`
