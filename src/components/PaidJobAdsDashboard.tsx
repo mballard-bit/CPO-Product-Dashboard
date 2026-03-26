@@ -443,18 +443,11 @@ const PaidJobAdsDashboard: React.FC<{ refreshKey: number }> = ({ refreshKey }) =
               formatter={v => `${v.toFixed(2)}%`} />
           </ChartGrid>
 
-          <SectionTitle>Views</SectionTitle>
-          <SectionDescription>Job listing visibility on LinkedIn</SectionDescription>
-          <FullWidthChart>
-            <SimpleChart data={jobs} dataKey="views" label="Total Job Views" color={colors.primary} />
-          </FullWidthChart>
-
           <SectionTitle>Applications</SectionTitle>
-          <SectionDescription>Applicant volume and hiring outcomes</SectionDescription>
-          <ChartGrid>
+          <SectionDescription>Applicant volume from LinkedIn job listings</SectionDescription>
+          <FullWidthChart>
             <SimpleChart data={jobs} dataKey="applicants" label="Applicants" color={colors.primary} />
-            <SimpleChart data={jobs} dataKey="hired" label="Hired" color={colors.success} />
-          </ChartGrid>
+          </FullWidthChart>
 
           <SectionTitle>Customer Voice</SectionTitle>
           <SectionDescription>Recent NPS comments mentioning job ads or LinkedIn</SectionDescription>

@@ -5,6 +5,7 @@ import MetricCard from './MetricCard';
 import FeatureBar from './FeatureBar';
 import TrendChart from './TrendChart';
 import GuideStatsCard from './GuideStatsCard';
+import CustomerVoice from './CustomerVoice';
 import {
   ContentArea, AreaHeader, AreaTitle, AreaDescription,
   MetricCardGrid, FeatureSection, FeatureSectionTitle, Button, ChartGrid
@@ -111,6 +112,10 @@ const AreaDashboard: React.FC<Props> = ({ area, refreshKey }) => {
             <GuideStatsCard key={g.guideId} config={g} refreshKey={refreshKey} />
           ))}
         </>
+      )}
+
+      {area.npsKeywords && area.npsKeywords.length > 0 && (
+        <CustomerVoice keywords={area.npsKeywords} refreshKey={refreshKey} />
       )}
     </ContentArea>
   );

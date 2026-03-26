@@ -39,6 +39,7 @@ export interface ProductArea {
   featureRows: FeatureRow[];
   trendCharts?: TrendChartConfig[];
   guideCards?: GuideCardConfig[];
+  npsKeywords?: string[];
   // If set, feature bar % uses this page/feature's visitor count as denominator
   // instead of total app visitors. Useful for funnel-style areas.
   featureBarBase?: { type: 'page' | 'feature'; id: string };

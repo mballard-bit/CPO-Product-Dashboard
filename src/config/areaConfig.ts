@@ -35,6 +35,7 @@ const AREAS: ProductArea[] = [
       { label: 'Benefits Home Page', pendoType: 'page', pendoId: 'HEfPp9RkNTVx1SfYpL3ATytOlGc', metric: 'visitors' },
       { label: 'Benefit History Details', pendoType: 'feature', pendoId: '6HJt7LJTV69lAL-iOuP4FPLBuiA', metric: 'visitors' },
     ],
+    npsKeywords: ['benefits', 'enrollment', 'health insurance', 'dental', 'vision', 'open enrollment', 'benefit'],
   },
   {
     id: 'time',
@@ -70,6 +71,7 @@ const AREAS: ProductArea[] = [
       { label: 'Hours Tile', pendoType: 'feature', pendoId: 'RJEjJj62J_sWBgC_WF7FrFb9bT8', metric: 'visitors' },
       { label: 'Hours In Payroll Tab', pendoType: 'feature', pendoId: 'vFd5m6U2tgYju3rWp8cDlxucZNo', metric: 'visitors' },
     ],
+    npsKeywords: ['timesheet', 'time tracking', 'attendance', 'clock in', 'kiosk', 'hours', 'time off'],
   },
   {
     id: 'payroll',
@@ -104,6 +106,7 @@ const AREAS: ProductArea[] = [
       { label: 'Approve Payroll', pendoType: 'feature', pendoId: 'Nggav53kQOZY206G1tFlKs1HXNs', metric: 'accounts' },
       { label: 'Fix Now (Employee Errors)', pendoType: 'feature', pendoId: 'BT0gI3oY8UdpucvL4DLYHsFc0Vs', metric: 'visitors' },
     ],
+    npsKeywords: ['payroll', 'paycheck', 'direct deposit', 'pay stub', 'taxes', 'garnishment', 'deduction'],
   },
   {
     id: 'performance',
@@ -139,6 +142,7 @@ const AREAS: ProductArea[] = [
       { label: 'Assessment', pendoType: 'page', pendoId: 'dqLtp4qScPNwZFOloylXWEkr0zE', metric: 'visitors' },
       { label: 'Feedback', pendoType: 'page', pendoId: 'n8OT20n-C3poKiM9uNHIT9pGTfs', metric: 'visitors' },
     ],
+    npsKeywords: ['performance', 'review', 'goals', 'assessment', '1:1', 'one on one', 'feedback', 'performance management'],
   },
   {
     id: 'hiring',
@@ -174,6 +178,7 @@ const AREAS: ProductArea[] = [
       { label: 'Candidates Tab', pendoType: 'page', pendoId: 'sgRCxFblsq9dthtIWR7-cnZS6EA', metric: 'visitors' },
       { label: 'Add Job Opening', pendoType: 'feature', pendoId: 'HvXG7X32ThvBsvHbksvHEgHqDaA', metric: 'visitors' },
     ],
+    npsKeywords: ['hiring', 'applicant', 'candidate', 'job opening', 'recruiting', 'ATS', 'offer letter'],
   },
   {
     id: 'people',
@@ -208,6 +213,7 @@ const AREAS: ProductArea[] = [
       { label: 'Standard Reports', pendoType: 'page', pendoId: 'p011cHh56kdX3XxpR1tsrnNgubU', metric: 'visitors' },
       { label: 'Custom Reports', pendoType: 'page', pendoId: 'CJhSmICbH88x0AbB9M2x9AZVr5k', metric: 'visitors' },
     ],
+    npsKeywords: ['employee profile', 'people', 'org chart', 'directory', 'reports', 'headcount', 'onboarding'],
   },
   {
     id: 'global-employment',
@@ -253,6 +259,7 @@ const AREAS: ProductArea[] = [
     guideCards: [
       { label: 'EOR New Location Prompt', guideId: 'Qmb-ZQT5qfmdK9p1PFTyj15bpbs' },
     ],
+    npsKeywords: ['global employment', 'EOR', 'employer of record', 'international hiring', 'remote hiring', 'global hiring'],
     // Use marketing page visitors as denominator so bars show funnel conversion rates
     featureBarBase: { type: 'page', id: '7OXzvl3RCCqrYuY_vjhmMsM-oIw' },
   },
