@@ -369,17 +369,23 @@ interface NpsCommentData {
 const PaidJobAdsDashboard: React.FC<{ refreshKey: number }> = ({ refreshKey }) => {
   const [data, setData] = useState<SheetData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [npsComments, setNpsComments] = useState<NpsCommentData[]>([]);
   const [npsLoading, setNpsLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    setError(false);
+    setError(null);
     fetch('/api/sheets/paid-job-ads')
-      .then(r => r.ok ? r.json() : Promise.reject(r))
+      .then(r => {
+        if (!r.ok) return r.json().then(body => Promise.reject(`HTTP ${r.status}: ${body?.detail || body?.error || r.statusText}`));
+        return r.json();
+      })
       .then(d => setData(d))
-      .catch(() => setError(true))
+      .catch(err => {
+        console.error('Paid Job Ads fetch error:', err);
+        setError(String(err));
+      })
       .finally(() => setLoading(false));
 
     setNpsLoading(true);
@@ -403,7 +409,12 @@ const PaidJobAdsDashboard: React.FC<{ refreshKey: number }> = ({ refreshKey }) =
       </AreaHeader>
 
       {loading && <ChartPlaceholder>Loading…</ChartPlaceholder>}
-      {!loading && error && <ChartPlaceholder>Could not load Google Sheets data</ChartPlaceholder>}
+      {!loading && error && (
+        <ChartPlaceholder>
+          Could not load Google Sheets data<br />
+          <span style={{ fontSize: 11, opacity: 0.7 }}>{error}</span>
+        </ChartPlaceholder>
+      )}
 
       {!loading && !error && data && (
         <>
