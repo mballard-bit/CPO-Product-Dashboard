@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { GoogleLogin, useGoogleLogin } from '@react-oauth/google';
+import React, { useState } from 'react';
+import { GoogleLogin } from '@react-oauth/google';
 import styled from 'styled-components';
 import { colors } from '../styles/StyledComponents';
 
