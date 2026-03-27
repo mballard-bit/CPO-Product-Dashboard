@@ -80,7 +80,14 @@ const AreaDashboard: React.FC<Props> = ({ area, refreshKey }) => {
     <ContentArea>
       <AreaHeader>
         <AreaTitle>{area.name}</AreaTitle>
-        <AreaDescription>{area.description}</AreaDescription>
+        <AreaDescription>
+          {area.description}
+          {' · '}
+          <a href="https://app.pendo.io" target="_blank" rel="noopener noreferrer"
+            style={{ color: 'inherit', opacity: 0.6, fontSize: 11 }}>
+            Source: Pendo ↗
+          </a>
+        </AreaDescription>
       </AreaHeader>
 
       <MetricCardGrid>

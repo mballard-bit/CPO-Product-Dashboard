@@ -1,12 +1,11 @@
 import React from 'react';
-import { ProductArea } from '../types';
 import {
   ModalOverlay, ModalBox, ModalTitle, ToggleRow, ToggleName,
   ToggleSwitch, Button
 } from '../styles/StyledComponents';
 
 interface Props {
-  areas: ProductArea[];
+  areas: { id: string; name: string }[];
   enabledIds: Set<string>;
   onToggle: (id: string) => void;
   onClose: () => void;

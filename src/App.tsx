@@ -10,15 +10,23 @@ import {
 
 const STORAGE_KEY = 'cpo_dashboard_enabled_areas';
 
+const PAID_ADS_AREA = { id: 'paid-job-ads', name: 'Paid Job Ads' };
+const ALL_AREA_IDS = [...AREAS.map(a => a.id), PAID_ADS_AREA.id];
+
 function loadEnabledIds(): Set<string> {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as string[];
-      if (Array.isArray(parsed) && parsed.length > 0) return new Set(parsed);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Ensure paid-job-ads is included if not explicitly stored (migration)
+        const set = new Set(parsed);
+        if (!parsed.includes(PAID_ADS_AREA.id)) set.add(PAID_ADS_AREA.id);
+        return set;
+      }
     }
   } catch { /* ignore */ }
-  return new Set(AREAS.filter(a => a.defaultEnabled).map(a => a.id));
+  return new Set(ALL_AREA_IDS);
 }
 
 function saveEnabledIds(ids: Set<string>): void {
@@ -28,8 +36,9 @@ function saveEnabledIds(ids: Set<string>): void {
 const App: React.FC = () => {
   const [enabledIds, setEnabledIds] = useState<Set<string>>(loadEnabledIds);
   const visibleAreas = AREAS.filter(a => enabledIds.has(a.id));
+  const paidAdsVisible = enabledIds.has(PAID_ADS_AREA.id);
   const [activeId, setActiveId] = useState<string>(() => visibleAreas[0]?.id ?? AREAS[0].id);
-  const PAID_ADS_ID = 'paid-job-ads';
+  const PAID_ADS_ID = PAID_ADS_AREA.id;
   const [refreshKey, setRefreshKey] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
 
@@ -40,7 +49,7 @@ const App: React.FC = () => {
         if (next.size === 1) return prev;
         next.delete(id);
         if (id === activeId) {
-          const remaining = AREAS.filter(a => next.has(a.id));
+          const remaining = [...AREAS.filter(a => next.has(a.id)), ...(next.has(PAID_ADS_ID) ? [PAID_ADS_AREA] : [])];
           setActiveId(remaining[0]?.id ?? '');
         }
       } else {
@@ -49,7 +58,7 @@ const App: React.FC = () => {
       saveEnabledIds(next);
       return next;
     });
-  }, [activeId]);
+  }, [activeId, PAID_ADS_ID]);
 
   const activeArea = AREAS.find(a => a.id === activeId) ?? visibleAreas[0];
 
@@ -63,6 +72,7 @@ const App: React.FC = () => {
         <HeaderActions>
           <Button onClick={() => setRefreshKey(k => k + 1)}>Refresh</Button>
           <Button onClick={() => setShowSettings(true)}>Manage Areas</Button>
+          <Button onClick={() => { localStorage.removeItem('cpo_auth_email'); window.location.reload(); }}>Sign Out</Button>
         </HeaderActions>
       </Header>
 
@@ -72,9 +82,11 @@ const App: React.FC = () => {
             {area.name}
           </Tab>
         ))}
-        <Tab active={activeId === PAID_ADS_ID} onClick={() => setActiveId(PAID_ADS_ID)}>
-          Paid Job Ads
-        </Tab>
+        {paidAdsVisible && (
+          <Tab active={activeId === PAID_ADS_ID} onClick={() => setActiveId(PAID_ADS_ID)}>
+            Paid Job Ads
+          </Tab>
+        )}
       </TabBar>
 
       {activeId === PAID_ADS_ID
@@ -84,7 +96,7 @@ const App: React.FC = () => {
 
       {showSettings && (
         <AreaSettings
-          areas={AREAS}
+          areas={[...AREAS, PAID_ADS_AREA]}
           enabledIds={enabledIds}
           onToggle={handleToggle}
           onClose={() => setShowSettings(false)}

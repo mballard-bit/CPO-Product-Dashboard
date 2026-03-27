@@ -405,7 +405,15 @@ const PaidJobAdsDashboard: React.FC<{ refreshKey: number }> = ({ refreshKey }) =
     <ContentArea>
       <AreaHeader>
         <AreaTitle>Paid Job Ads</AreaTitle>
-        <AreaDescription>LinkedIn Paid Job Ads — adoption, views, applications, and revenue · Sourced from Google Sheets</AreaDescription>
+        <AreaDescription>
+          LinkedIn Paid Job Ads — adoption, views, applications, and revenue
+          {' · '}
+          <a href="https://docs.google.com/spreadsheets/d/1t9RSWDSGYM0AAaUK6uZ7t0QURcGZAO6fV7UcVZ6EdUQ"
+            target="_blank" rel="noopener noreferrer"
+            style={{ color: 'inherit', opacity: 0.6, fontSize: 11 }}>
+            Source: Google Sheet ↗
+          </a>
+        </AreaDescription>
       </AreaHeader>
 
       {loading && <ChartPlaceholder>Loading…</ChartPlaceholder>}
