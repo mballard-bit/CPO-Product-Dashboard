@@ -63,6 +63,6 @@ module.exports = async function handler(req, res) {
     res.json(result);
   } catch (err) {
     console.error('Google Sheets error:', err.message);
-    res.status(500).json({ error: 'Failed to fetch Google Sheets data' });
+    res.status(500).json({ error: 'Failed to fetch Google Sheets data', detail: err.message });
   }
 };
