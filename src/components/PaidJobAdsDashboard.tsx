@@ -24,9 +24,25 @@ interface JobRow {
   pctOfJobsPosted: number | null;
 }
 
+interface MonthlyJobRow {
+  month: string;
+  atsCustomers: number | null;
+  jobsPosted: number | null;
+  customersPosted: number | null;
+  firstTimePosting: number | null;
+  jobsPostedToLI: number | null;
+  views: number | null;
+  applicants: number | null;
+  hired: number | null;
+  liRevenue: number | null;
+  bhrRevenue: number | null;
+  pctOfJobsPosted: number | null;
+}
+
 interface SheetData {
   ats: any[];
   jobs: JobRow[];
+  jobsMonthly: MonthlyJobRow[];
 }
 
 // ── Styled components ──────────────────────────────────────────────────────────
@@ -178,7 +194,7 @@ function latestVal(arr: any[], key: string): number | null {
 
 function latestWeek(arr: any[], key: string): string | null {
   for (let i = arr.length - 1; i >= 0; i--) {
-    if (arr[i][key] !== null) return arr[i].week ?? null;
+    if (arr[i][key] !== null) return arr[i].month ?? arr[i].week ?? null;
   }
   return null;
 }
@@ -296,9 +312,10 @@ interface SimpleChartProps {
   color?: string;
   formatter?: (v: number) => string;
   isRevenue?: boolean;
+  xKey?: string;
 }
 
-const SimpleChart: React.FC<SimpleChartProps> = ({ data, dataKey, label, color = colors.primary, formatter, isRevenue }) => {
+const SimpleChart: React.FC<SimpleChartProps> = ({ data, dataKey, label, color = colors.primary, formatter, isRevenue, xKey = 'week' }) => {
   const filled = data.filter(d => d[dataKey] !== null);
   if (filled.length === 0) return (
     <ChartSection>
@@ -312,7 +329,7 @@ const SimpleChart: React.FC<SimpleChartProps> = ({ data, dataKey, label, color =
       <ResponsiveContainer width="100%" height={160}>
         <LineChart data={filled} margin={{ top: 4, right: 8, bottom: 0, left: -20 }}>
           <CartesianGrid strokeDasharray="3 3" stroke={colors.border} />
-          <XAxis dataKey="week" tick={TICK} tickLine={false} interval="preserveStartEnd" />
+          <XAxis dataKey={xKey} tick={TICK} tickLine={false} interval="preserveStartEnd" />
           <YAxis tick={TICK} tickLine={false} axisLine={false} allowDecimals={false}
             tickFormatter={formatter} />
           <Tooltip contentStyle={TOOLTIP_STYLE} labelStyle={{ color: colors.lightText }}
@@ -326,7 +343,7 @@ const SimpleChart: React.FC<SimpleChartProps> = ({ data, dataKey, label, color =
   );
 };
 
-const RevenueChart: React.FC<{ data: JobRow[] }> = ({ data }) => {
+const RevenueChart: React.FC<{ data: MonthlyJobRow[] }> = ({ data }) => {
   const filled = data.filter(d => d.liRevenue !== null || d.bhrRevenue !== null);
   if (filled.length === 0) return (
     <ChartSection>
@@ -340,7 +357,7 @@ const RevenueChart: React.FC<{ data: JobRow[] }> = ({ data }) => {
       <ResponsiveContainer width="100%" height={200}>
         <LineChart data={filled} margin={{ top: 4, right: 16, bottom: 0, left: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke={colors.border} />
-          <XAxis dataKey="week" tick={TICK} tickLine={false} interval="preserveStartEnd" />
+          <XAxis dataKey="month" tick={TICK} tickLine={false} interval="preserveStartEnd" />
           <YAxis tick={TICK} tickLine={false} axisLine={false}
             tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} />
           <Tooltip contentStyle={TOOLTIP_STYLE} labelStyle={{ color: colors.lightText }}
@@ -397,9 +414,10 @@ const PaidJobAdsDashboard: React.FC<{ refreshKey: number }> = ({ refreshKey }) =
   }, [refreshKey]);
 
   const jobs = data?.jobs ?? [];
+  const jobsMonthly = data?.jobsMonthly ?? [];
   const ytdYear = new Date().getFullYear();
-  const weeksElapsed = Math.ceil((Date.now() - new Date(ytdYear, 0, 1).getTime()) / (7 * 24 * 60 * 60 * 1000));
-  const ytdRevenue = jobs.slice(-weeksElapsed).reduce((sum, r) => sum + (r.bhrRevenue ?? 0), 0);
+  const ytdMonths = jobsMonthly.filter(r => r.month.endsWith(`-${ytdYear}`));
+  const ytdRevenue = ytdMonths.reduce((sum, r) => sum + (r.bhrRevenue ?? 0), 0);
 
   return (
     <ContentArea>
@@ -429,16 +447,16 @@ const PaidJobAdsDashboard: React.FC<{ refreshKey: number }> = ({ refreshKey }) =
           <MetricCardGrid>
             <CardContainer>
               <CardLabel>LI Monthly Revenue</CardLabel>
-              <CardValue>{fmtRevenue(latestVal(jobs, 'liRevenue'))}</CardValue>
-              {latestWeek(jobs, 'liRevenue') && (
-                <CardTrend>Week of {latestWeek(jobs, 'liRevenue')}</CardTrend>
+              <CardValue>{fmtRevenue(latestVal(jobsMonthly, 'liRevenue'))}</CardValue>
+              {latestWeek(jobsMonthly, 'liRevenue') && (
+                <CardTrend>{latestWeek(jobsMonthly, 'liRevenue')}</CardTrend>
               )}
             </CardContainer>
             <CardContainer>
               <CardLabel>BHR Revenue</CardLabel>
-              <CardValue>{fmtRevenue(latestVal(jobs, 'bhrRevenue'))}</CardValue>
-              {latestWeek(jobs, 'bhrRevenue') && (
-                <CardTrend>Week of {latestWeek(jobs, 'bhrRevenue')}</CardTrend>
+              <CardValue>{fmtRevenue(latestVal(jobsMonthly, 'bhrRevenue'))}</CardValue>
+              {latestWeek(jobsMonthly, 'bhrRevenue') && (
+                <CardTrend>{latestWeek(jobsMonthly, 'bhrRevenue')}</CardTrend>
               )}
             </CardContainer>
             <CardContainer>
@@ -451,15 +469,15 @@ const PaidJobAdsDashboard: React.FC<{ refreshKey: number }> = ({ refreshKey }) =
             </CardContainer>
             <CardContainer>
               <CardLabel>Applicants</CardLabel>
-              <CardValue>{fmt(latestVal(jobs, 'applicants'))}</CardValue>
+              <CardValue>{fmt(latestVal(jobsMonthly, 'applicants'))}</CardValue>
             </CardContainer>
 
           </MetricCardGrid>
 
           <SectionTitle>Revenue</SectionTitle>
-          <SectionDescription>LinkedIn and BHR revenue trends over time</SectionDescription>
+          <SectionDescription>LinkedIn and BHR revenue trends over time (monthly)</SectionDescription>
           <FullWidthChart>
-            <RevenueChart data={jobs} />
+            <RevenueChart data={jobsMonthly} />
           </FullWidthChart>
 
           <SectionTitle>Adoption</SectionTitle>
@@ -473,9 +491,9 @@ const PaidJobAdsDashboard: React.FC<{ refreshKey: number }> = ({ refreshKey }) =
           </ChartGrid>
 
           <SectionTitle>Applications</SectionTitle>
-          <SectionDescription>Applicant volume from LinkedIn job listings</SectionDescription>
+          <SectionDescription>Applicant volume from LinkedIn job listings (monthly)</SectionDescription>
           <FullWidthChart>
-            <SimpleChart data={jobs} dataKey="applicants" label="Applicants" color={colors.primary} />
+            <SimpleChart data={jobsMonthly} dataKey="applicants" label="Applicants" color={colors.primary} xKey="month" />
           </FullWidthChart>
 
           <SectionTitle>Customer Voice</SectionTitle>

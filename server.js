@@ -2,7 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 const Anthropic = require('@anthropic-ai/sdk');
-const { google } = require('googleapis');
+require('dotenv').config({ path: '.env.local' });
 require('dotenv').config();
 
 const app = express();
@@ -450,84 +450,9 @@ app.get('/api/pendo/guide-summary', async (req, res) => {
   }
 });
 
-// Google Sheets integration
-const SHEETS_ID = '1t9RSWDSGYM0AAaUK6uZ7t0QURcGZAO6fV7UcVZ6EdUQ';
-const sheetsAuth = new google.auth.GoogleAuth({
-  keyFile: 'service-account.json',
-  scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-});
-
-// GET /api/sheets/paid-job-ads
-// Returns all rows from the Paid Job Ads sheet as an array of objects
-app.get('/api/sheets/paid-job-ads', async (req, res) => {
-  try {
-    const cacheKey = 'sheets:paid-job-ads';
-    const cached = getCached(cacheKey);
-    if (cached) return res.json(cached);
-
-    const client = await sheetsAuth.getClient();
-    const sheets = google.sheets({ version: 'v4', auth: client });
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: SHEETS_ID,
-      range: "'2025&2026'!A48:Z",
-    });
-
-    const rows = response.data.values ?? [];
-    if (rows.length < 2) return res.json({ ats: [], jobs: [] });
-
-    const headers = rows[0];
-
-    // Parse a numeric value from a cell (strip $, commas, %)
-    function parseNum(val) {
-      if (!val || val === '' || val === '#DIV/0!') return null;
-      return parseFloat(String(val).replace(/[$,%]/g, '').replace(/,/g, '')) || null;
-    }
-
-    // Skip the EA row (row index 1) — it's a label/annotation row, not real data.
-    // Keep rows where either the ATS date (col A/index 0) OR the Jobs date
-    // (col M/index 12) is present — the two tables may not have identical row ranges.
-    const dataRows = rows.slice(2).filter(r =>
-      (r[0] && r[0] !== 'EA' && r[0] !== '') ||
-      (r[12] && r[12] !== 'EA' && r[12] !== '')
-    );
-
-    // Left table: ATS / Interview metrics (columns 0-9)
-    const ats = dataRows.map(r => ({
-      week: r[0] ?? '',
-      atsCustomers: parseNum(r[1]),
-      calConnected: parseNum(r[2]),
-      customersInviting: parseNum(r[3]),
-      interviewsScheduled: parseNum(r[4]),
-      interviewsPerActive: parseNum(r[5]),
-      pctScheduling: parseNum(r[6]),
-      invitesSent: parseNum(r[8]),
-      acceptanceRate: parseNum(r[9]),
-    })).filter(r => r.atsCustomers !== null);
-
-    // Right table: LinkedIn / Job posting metrics (columns 12-24)
-    const jobs = dataRows.map(r => ({
-      week: r[12] ?? '',
-      atsCustomers: parseNum(r[14]),
-      jobsPosted: parseNum(r[15]),
-      customersPosted: parseNum(r[16]),
-      firstTimePosting: parseNum(r[17]),
-      jobsPostedToLI: parseNum(r[18]),
-      views: parseNum(r[19]),
-      applicants: parseNum(r[20]),
-      hired: parseNum(r[21]),
-      liRevenue: parseNum(r[22]),
-      bhrRevenue: parseNum(r[23]),
-      pctOfJobsPosted: parseNum(r[24]),
-    })).filter(r => r.jobsPosted !== null || r.liRevenue !== null);
-
-    const result = { ats, jobs };
-    setCached(cacheKey, result, 15 * 60 * 1000);
-    res.json(result);
-  } catch (error) {
-    console.error('Google Sheets error:', error.message);
-    res.status(500).json({ error: 'Failed to fetch Google Sheets data' });
-  }
-});
+// Google Sheets routes — delegate to the same handlers used by Vercel
+const paidJobAdsHandler = require('./api/sheets/paid-job-ads');
+app.get('/api/sheets/paid-job-ads', paidJobAdsHandler);
 
 // GET /api/pendo/nps-comments?keywords=job+ads,linkedin
 // Returns recent NPS responses whose comment text matches any of the given keywords
@@ -590,24 +515,25 @@ app.get('/api/pendo/nps-comments', async (req, res) => {
   }
 });
 
-// GET /api/sheets/global-employment
-// Returns data from the "invites/Starts by month" tab
-app.get('/api/sheets/global-employment', async (req, res) => {
+const globalEmploymentHandler = require('./api/sheets/global-employment');
+app.get('/api/sheets/global-employment', globalEmploymentHandler);
+
+// Legacy stub kept for reference
+app.get('/api/sheets/global-employment-debug', async (req, res) => {
   try {
-    const client = await sheetsAuth.getClient();
-    const sheets = google.sheets({ version: 'v4', auth: client });
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: '19nbeemZFUO28kurH3ASXGaIzYHLAbWjSgzo8ezotTck',
-      range: "'invites/Starts by month'!A1:Z",
-    });
-    const rows = response.data.values ?? [];
-    // Return first 5 rows raw for inspection
-    res.json({ totalRows: rows.length, first5: rows.slice(0, 5) });
+    res.json({ message: 'Use /api/sheets/global-employment' });
   } catch (error) {
     console.error('Global Employment Sheets error:', error.message);
     res.status(500).json({ error: error.message });
   }
 });
+
+const tableauDiscoverHandler = require('./api/debug/tableau-discover');
+const eliteBenchmarksHandler = require('./api/tableau/elite-benchmarks');
+app.get('/api/tableau/elite-benchmarks', eliteBenchmarksHandler);
+const rawRowsHandler = require('./api/debug/raw-rows');
+app.get('/api/debug/raw-rows', rawRowsHandler);
+app.get('/api/debug/tableau-discover', tableauDiscoverHandler);
 
 // Note: segmentId filtering is not implemented in v1 — add a conditional pipeline
 // filter stage to each endpoint when segment-based views are needed.

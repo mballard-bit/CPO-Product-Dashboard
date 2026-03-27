@@ -4,6 +4,7 @@ import AreaDashboard from './components/AreaDashboard';
 import AreaSettings from './components/AreaSettings';
 import PaidJobAdsDashboard from './components/PaidJobAdsDashboard';
 import ThreePGDashboard from './components/ThreePGDashboard';
+import BenchmarksDashboard from './components/BenchmarksDashboard';
 import {
   AppContainer, Header, HeaderLeft, Title, Subtitle,
   HeaderActions, Button, TabBar, Tab
@@ -13,7 +14,8 @@ const STORAGE_KEY = 'cpo_dashboard_enabled_areas';
 
 const PAID_ADS_AREA = { id: 'paid-job-ads', name: 'Paid Job Ads' };
 const THREE_PG_AREA = { id: '3pg', name: '3PG' };
-const ALL_AREA_IDS = [...AREAS.map(a => a.id), PAID_ADS_AREA.id, THREE_PG_AREA.id];
+const BENCHMARKS_AREA = { id: 'benchmarks', name: 'Benchmarks' };
+const ALL_AREA_IDS = [...AREAS.map(a => a.id), PAID_ADS_AREA.id, THREE_PG_AREA.id, BENCHMARKS_AREA.id];
 
 function loadEnabledIds(): Set<string> {
   try {
@@ -25,6 +27,7 @@ function loadEnabledIds(): Set<string> {
         const set = new Set(parsed);
         if (!parsed.includes(PAID_ADS_AREA.id)) set.add(PAID_ADS_AREA.id);
         if (!parsed.includes(THREE_PG_AREA.id)) set.add(THREE_PG_AREA.id);
+        if (!parsed.includes(BENCHMARKS_AREA.id)) set.add(BENCHMARKS_AREA.id);
         return set;
       }
     }
@@ -41,9 +44,11 @@ const App: React.FC = () => {
   const visibleAreas = AREAS.filter(a => enabledIds.has(a.id));
   const paidAdsVisible = enabledIds.has(PAID_ADS_AREA.id);
   const threePgVisible = enabledIds.has(THREE_PG_AREA.id);
+  const benchmarksVisible = enabledIds.has(BENCHMARKS_AREA.id);
   const [activeId, setActiveId] = useState<string>(() => visibleAreas[0]?.id ?? AREAS[0].id);
   const PAID_ADS_ID = PAID_ADS_AREA.id;
   const THREE_PG_ID = THREE_PG_AREA.id;
+  const BENCHMARKS_ID = BENCHMARKS_AREA.id;
   const [refreshKey, setRefreshKey] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
 
@@ -54,7 +59,12 @@ const App: React.FC = () => {
         if (next.size === 1) return prev;
         next.delete(id);
         if (id === activeId) {
-          const remaining = [...AREAS.filter(a => next.has(a.id)), ...(next.has(PAID_ADS_ID) ? [PAID_ADS_AREA] : [])];
+          const remaining = [
+            ...AREAS.filter(a => next.has(a.id)),
+            ...(next.has(PAID_ADS_ID) ? [PAID_ADS_AREA] : []),
+            ...(next.has(THREE_PG_ID) ? [THREE_PG_AREA] : []),
+            ...(next.has(BENCHMARKS_ID) ? [BENCHMARKS_AREA] : []),
+          ];
           setActiveId(remaining[0]?.id ?? '');
         }
       } else {
@@ -63,7 +73,7 @@ const App: React.FC = () => {
       saveEnabledIds(next);
       return next;
     });
-  }, [activeId, PAID_ADS_ID]);
+  }, [activeId, PAID_ADS_ID, THREE_PG_ID, BENCHMARKS_ID]);
 
   const activeArea = AREAS.find(a => a.id === activeId) ?? visibleAreas[0];
 
@@ -97,18 +107,25 @@ const App: React.FC = () => {
             3PG
           </Tab>
         )}
+        {benchmarksVisible && (
+          <Tab active={activeId === BENCHMARKS_ID} onClick={() => setActiveId(BENCHMARKS_ID)}>
+            Benchmarks
+          </Tab>
+        )}
       </TabBar>
 
       {activeId === PAID_ADS_ID
         ? <PaidJobAdsDashboard refreshKey={refreshKey} />
         : activeId === THREE_PG_ID
         ? <ThreePGDashboard refreshKey={refreshKey} />
+        : activeId === BENCHMARKS_ID
+        ? <BenchmarksDashboard refreshKey={refreshKey} />
         : activeArea && <AreaDashboard key={activeArea.id} area={activeArea} refreshKey={refreshKey} />
       }
 
       {showSettings && (
         <AreaSettings
-          areas={[...AREAS, PAID_ADS_AREA, THREE_PG_AREA]}
+          areas={[...AREAS, PAID_ADS_AREA, THREE_PG_AREA, BENCHMARKS_AREA]}
           enabledIds={enabledIds}
           onToggle={handleToggle}
           onClose={() => setShowSettings(false)}

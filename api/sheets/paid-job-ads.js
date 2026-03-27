@@ -70,7 +70,27 @@ module.exports = async function handler(req, res) {
       customersPosting: parseNum(r[51]),
     })).filter(r => r.week !== '');
 
-    const result = { ats, jobs, seek };
+    // Monthly summary section (columns AB–AO, indices 27–40)
+    // These rows have a month label like "Aug-2025" at index 27
+    const MONTH_RE = /^[A-Za-z]{3}-\d{4}$/;
+    const jobsMonthly = dataRows
+      .filter(r => r[27] && MONTH_RE.test(String(r[27]).trim()))
+      .map(r => ({
+        month: String(r[27]).trim(),
+        atsCustomers: parseNum(r[28]),
+        jobsPosted: parseNum(r[29]),
+        customersPosted: parseNum(r[30]),
+        firstTimePosting: parseNum(r[31]),
+        jobsPostedToLI: parseNum(r[32]),
+        views: parseNum(r[33]),
+        applicants: parseNum(r[34]),
+        hired: parseNum(r[35]),
+        liRevenue: parseNum(r[36]),
+        bhrRevenue: parseNum(r[37]),
+        pctOfJobsPosted: parseNum(r[38]),
+      }));
+
+    const result = { ats, jobs, seek, jobsMonthly };
     setCached(cacheKey, result, 15 * 60 * 1000);
     res.json(result);
   } catch (err) {
