@@ -1,14 +1,15 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, Suspense, lazy } from 'react';
 import AREAS from './config/areaConfig';
 import AreaDashboard from './components/AreaDashboard';
 import AreaSettings from './components/AreaSettings';
-import PaidJobAdsDashboard from './components/PaidJobAdsDashboard';
-import ThreePGDashboard from './components/ThreePGDashboard';
-import BenchmarksDashboard from './components/BenchmarksDashboard';
 import {
   AppContainer, Header, HeaderLeft, Title, Subtitle,
-  HeaderActions, Button, TabBar, Tab
+  HeaderActions, Button, TabBar, Tab, ChartPlaceholder,
 } from './styles/StyledComponents';
+
+const PaidJobAdsDashboard = lazy(() => import('./components/PaidJobAdsDashboard'));
+const ThreePGDashboard = lazy(() => import('./components/ThreePGDashboard'));
+const BenchmarksDashboard = lazy(() => import('./components/BenchmarksDashboard'));
 
 const STORAGE_KEY = 'cpo_dashboard_enabled_areas';
 
@@ -114,14 +115,16 @@ const App: React.FC = () => {
         )}
       </TabBar>
 
-      {activeId === PAID_ADS_ID
-        ? <PaidJobAdsDashboard refreshKey={refreshKey} />
-        : activeId === THREE_PG_ID
-        ? <ThreePGDashboard refreshKey={refreshKey} />
-        : activeId === BENCHMARKS_ID
-        ? <BenchmarksDashboard refreshKey={refreshKey} />
-        : activeArea && <AreaDashboard key={activeArea.id} area={activeArea} refreshKey={refreshKey} />
-      }
+      <Suspense fallback={<ChartPlaceholder>Loading…</ChartPlaceholder>}>
+        {activeId === PAID_ADS_ID
+          ? <PaidJobAdsDashboard refreshKey={refreshKey} />
+          : activeId === THREE_PG_ID
+          ? <ThreePGDashboard refreshKey={refreshKey} />
+          : activeId === BENCHMARKS_ID
+          ? <BenchmarksDashboard refreshKey={refreshKey} />
+          : activeArea && <AreaDashboard key={activeArea.id} area={activeArea} refreshKey={refreshKey} />
+        }
+      </Suspense>
 
       {showSettings && (
         <AreaSettings

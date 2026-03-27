@@ -1,5 +1,5 @@
 const { getSheetsClient } = require('../_lib/sheets');
-const { getCached, setCached } = require('../_lib/cache');
+const { getCached, setCached, setCacheHeaders } = require('../_lib/cache');
 
 const SHEETS_ID = '19nbeemZFUO28kurH3ASXGaIzYHLAbWjSgzo8ezotTck';
 
@@ -7,7 +7,7 @@ module.exports = async function handler(req, res) {
   try {
     const cacheKey = 'sheets:global-employment';
     const cached = getCached(cacheKey);
-    if (cached) return res.json(cached);
+    if (cached) { setCacheHeaders(res); return res.json(cached); }
 
     const sheets = getSheetsClient();
     const response = await sheets.spreadsheets.values.get({
@@ -18,7 +18,7 @@ module.exports = async function handler(req, res) {
     const rows = response.data.values ?? [];
     const result = { totalRows: rows.length, first5: rows.slice(0, 5) };
     setCached(cacheKey, result, 15 * 60 * 1000);
-    res.json(result);
+    setCacheHeaders(res); res.json(result);
   } catch (err) {
     console.error('Global Employment Sheets error:', err.message);
     res.status(500).json({ error: err.message });

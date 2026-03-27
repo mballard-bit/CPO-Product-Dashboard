@@ -1,7 +1,23 @@
 const https = require('https');
-const { getCached, setCached } = require('../_lib/cache');
+const { getCached, setCached, setCacheHeaders } = require('../_lib/cache');
 
 const SITE_ID = '61cb2b09-4350-4210-987a-38e86bcfb486';
+
+// Module-level token cache — survives across requests in a warm instance
+let cachedToken = null;
+let tokenExpiry = 0;
+
+async function getAuthToken(server, patName, patSecret, site) {
+  if (cachedToken && Date.now() < tokenExpiry) return cachedToken;
+  const res = await httpPost(`${server}/api/3.21/auth/signin`, {
+    credentials: { personalAccessTokenName: patName, personalAccessTokenSecret: patSecret, site: { contentUrl: site } },
+  }, { Accept: 'application/json' });
+  if (res.status !== 200) throw new Error(`Tableau auth failed: ${res.body}`);
+  cachedToken = JSON.parse(res.body).credentials.token;
+  tokenExpiry = Date.now() + 90 * 60 * 1000; // tokens last 2h, refresh after 90min
+  return cachedToken;
+}
+
 const VIEW_IDS = {
   featureUsage: '31e22669-ee75-42f1-9ce1-59544a225b5c',      // Elite Package / Feature Usage Overview
   usageByArea: 'a3eb3c61-f9c1-45e8-9785-cf2577f4dfde',        // Company Product Usage / Usage by Package and Feature
@@ -75,7 +91,7 @@ function parseCsv(text) {
 module.exports = async (req, res) => {
   const cacheKey = 'tableau:elite-benchmarks';
   const cached = getCached(cacheKey);
-  if (cached) return res.json(cached);
+  if (cached) { setCacheHeaders(res, 1800); return res.json(cached); }
 
   try {
     const server = process.env.TABLEAU_SERVER;
@@ -83,20 +99,8 @@ module.exports = async (req, res) => {
     const patSecret = process.env.TABLEAU_PAT_SECRET;
     const site = process.env.TABLEAU_SITE;
 
-    // Sign in
-    const signInRes = await httpPost(`${server}/api/3.21/auth/signin`, {
-      credentials: {
-        personalAccessTokenName: patName,
-        personalAccessTokenSecret: patSecret,
-        site: { contentUrl: site },
-      },
-    }, { Accept: 'application/json' });
-
-    if (signInRes.status !== 200) {
-      return res.status(502).json({ error: 'Tableau auth failed', detail: signInRes.body });
-    }
-
-    const { token } = JSON.parse(signInRes.body).credentials;
+    // Get auth token (cached at module level for warm instances)
+    const token = await getAuthToken(server, patName, patSecret, site);
     const authHeaders = { 'X-Tableau-Auth': token };
 
     // Fetch both views in parallel
@@ -105,8 +109,11 @@ module.exports = async (req, res) => {
       httpGet(`${server}/api/3.21/sites/${SITE_ID}/views/${VIEW_IDS.usageByArea}/data`, authHeaders),
     ]);
 
-    // Sign out (fire and forget)
-    httpPost(`${server}/api/3.21/auth/signout`, {}, authHeaders).catch(() => {});
+    // If token was rejected (expired early), clear cache and let next request re-auth
+    if (featureRaw.status === 401 || usageRaw.status === 401) {
+      cachedToken = null;
+      return res.status(502).json({ error: 'Tableau token expired, please retry' });
+    }
 
     // ── Feature Usage Distribution (Elite customers by # of features) ──────────
     const featureRows = parseCsv(featureRaw.body);
@@ -186,6 +193,7 @@ module.exports = async (req, res) => {
 
     const result = { featureUsage, areaUsage, topFeatures, latestMonth };
     setCached(cacheKey, result, 30 * 60 * 1000); // 30 min cache
+    setCacheHeaders(res, 1800); // 30 min CDN cache
     res.json(result);
   } catch (err) {
     console.error('Tableau elite-benchmarks error:', err.message);

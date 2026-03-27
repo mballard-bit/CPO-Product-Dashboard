@@ -1,6 +1,6 @@
 const Anthropic = require('@anthropic-ai/sdk');
 const { pendoPost } = require('../_lib/pendo');
-const { getCached, setCached } = require('../_lib/cache');
+const { getCached, setCached, setCacheHeaders } = require('../_lib/cache');
 
 const anthropic = process.env.ANTHROPIC_API_KEY
   ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
@@ -66,7 +66,7 @@ module.exports = async function handler(req, res) {
 
     const cacheKey = `qoq:${type}:${id}`;
     const cached = getCached(cacheKey);
-    if (cached) return res.json(cached);
+    if (cached) { setCacheHeaders(res); return res.json(cached); }
 
     const DAY = 24 * 60 * 60 * 1000;
     const now = Date.now();
@@ -112,7 +112,7 @@ Sentence 1: describe the trend factually with specific numbers. Sentences 2-3: p
 
     const result = { current, previous, changePct, insight };
     setCached(cacheKey, result, 6 * 60 * 60 * 1000);
-    res.json(result);
+    setCacheHeaders(res); res.json(result);
   } catch (err) {
     console.error('QoQ error:', err.message);
     res.status(500).json({ error: 'Failed to fetch QoQ data' });

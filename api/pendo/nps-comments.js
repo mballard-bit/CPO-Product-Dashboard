@@ -1,5 +1,5 @@
 const { pendoPost, getPendoAppId } = require('../_lib/pendo');
-const { getCached, setCached } = require('../_lib/cache');
+const { getCached, setCached, setCacheHeaders } = require('../_lib/cache');
 
 module.exports = async function handler(req, res) {
   try {
@@ -9,7 +9,7 @@ module.exports = async function handler(req, res) {
 
     const cacheKey = `nps-comments:${keywords.join('|')}:${limit}`;
     const cached = getCached(cacheKey);
-    if (cached) return res.json(cached);
+    if (cached) { setCacheHeaders(res); return res.json(cached); }
 
     const appId = getPendoAppId();
     const startMs = Date.now() - 180 * 24 * 60 * 60 * 1000;

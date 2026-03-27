@@ -1,5 +1,5 @@
 const { getSheetsClient } = require('../_lib/sheets');
-const { getCached, setCached } = require('../_lib/cache');
+const { getCached, setCached, setCacheHeaders } = require('../_lib/cache');
 
 const SHEETS_ID = '1t9RSWDSGYM0AAaUK6uZ7t0QURcGZAO6fV7UcVZ6EdUQ';
 
@@ -12,7 +12,7 @@ module.exports = async function handler(req, res) {
   try {
     const cacheKey = 'sheets:paid-job-ads';
     const cached = getCached(cacheKey);
-    if (cached) return res.json(cached);
+    if (cached) { setCacheHeaders(res); return res.json(cached); }
 
     const sheets = getSheetsClient();
     const response = await sheets.spreadsheets.values.get({
@@ -92,7 +92,7 @@ module.exports = async function handler(req, res) {
 
     const result = { ats, jobs, seek, jobsMonthly };
     setCached(cacheKey, result, 15 * 60 * 1000);
-    res.json(result);
+    setCacheHeaders(res); res.json(result);
   } catch (err) {
     console.error('Google Sheets error:', err.message);
     res.status(500).json({ error: 'Failed to fetch Google Sheets data', detail: err.message });

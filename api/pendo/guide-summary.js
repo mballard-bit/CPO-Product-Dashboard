@@ -1,5 +1,5 @@
 const { pendoPost, getStartMs } = require('../_lib/pendo');
-const { getCached, setCached } = require('../_lib/cache');
+const { getCached, setCached, setCacheHeaders } = require('../_lib/cache');
 
 module.exports = async function handler(req, res) {
   try {
@@ -8,7 +8,7 @@ module.exports = async function handler(req, res) {
 
     const cacheKey = `guide-summary:${guideId}`;
     const cached = getCached(cacheKey);
-    if (cached) return res.json(cached);
+    if (cached) { setCacheHeaders(res); return res.json(cached); }
 
     const startMs = getStartMs();
 
@@ -51,7 +51,7 @@ module.exports = async function handler(req, res) {
 
     const result = { seen, dismissed, completed, dismissalRate, completionRate };
     setCached(cacheKey, result);
-    res.json(result);
+    setCacheHeaders(res); res.json(result);
   } catch (err) {
     console.error('Guide summary error:', err.message);
     res.status(500).json({ error: 'Failed to fetch guide summary' });

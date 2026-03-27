@@ -1,5 +1,5 @@
 const { pendoPost } = require('../_lib/pendo');
-const { getCached, setCached } = require('../_lib/cache');
+const { getCached, setCached, setCacheHeaders } = require('../_lib/cache');
 
 module.exports = async function handler(req, res) {
   try {
@@ -10,7 +10,7 @@ module.exports = async function handler(req, res) {
     const numDays = Math.min(90, Math.max(7, parseInt(days, 10) || 30));
     const cacheKey = `timeseries:${type}:${id}:${numDays}`;
     const cached = getCached(cacheKey);
-    if (cached) return res.json(cached);
+    if (cached) { setCacheHeaders(res); return res.json(cached); }
 
     const startMs = (() => {
       const d = new Date();
@@ -41,7 +41,7 @@ module.exports = async function handler(req, res) {
     });
 
     setCached(cacheKey, data);
-    res.json(data);
+    setCacheHeaders(res); res.json(data);
   } catch (err) {
     console.error('Pendo timeseries error:', err.message);
     res.status(500).json({ error: 'Failed to fetch timeseries from Pendo' });
