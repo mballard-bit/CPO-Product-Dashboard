@@ -72,17 +72,6 @@ export const HeaderLeft = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
-
-  /* Green leaf accent mark to the left of the title */
-  &::before {
-    content: '';
-    display: block;
-    width: 4px;
-    height: 32px;
-    background: ${colors.primary};
-    border-radius: 2px;
-    flex-shrink: 0;
-  }
 `;
 
 export const Title = styled.h1`
