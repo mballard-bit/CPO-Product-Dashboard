@@ -56,7 +56,7 @@ module.exports = async function handler(req, res) {
       liRevenue: parseNum(r[22]),
       bhrRevenue: parseNum(r[23]),
       pctOfJobsPosted: parseNum(r[24]),
-    })).filter(r => r.jobsPosted !== null || r.liRevenue !== null);
+    })).filter(r => r.week !== '');
 
     const result = { ats, jobs };
     setCached(cacheKey, result, 15 * 60 * 1000);
