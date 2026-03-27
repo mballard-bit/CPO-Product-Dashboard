@@ -17,7 +17,7 @@ module.exports = async function handler(req, res) {
     const sheets = getSheetsClient();
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SHEETS_ID,
-      range: "'2025&2026'!A48:Z",
+      range: "'2025&2026'!A48:AZ",
     });
 
     const rows = response.data.values ?? [];
@@ -28,7 +28,8 @@ module.exports = async function handler(req, res) {
     // (col M/index 12) is present — the two tables may not have identical row ranges.
     const dataRows = rows.slice(2).filter(r =>
       (r[0] && r[0] !== 'EA' && r[0] !== '') ||
-      (r[12] && r[12] !== 'EA' && r[12] !== '')
+      (r[12] && r[12] !== 'EA' && r[12] !== '') ||
+      (r[44] && r[44] !== 'EA' && r[44] !== '' && r[44] !== 'Baseline')
     );
 
     const ats = dataRows.map(r => ({
@@ -58,7 +59,18 @@ module.exports = async function handler(req, res) {
       pctOfJobsPosted: parseNum(r[24]),
     })).filter(r => r.week !== '');
 
-    const result = { ats, jobs };
+    const seek = dataRows.map(r => ({
+      week: r[44] ?? '',
+      totalAnzCustomers: parseNum(r[45]),
+      activeAts: parseNum(r[46]),
+      atsAdoption: parseNum(r[47]),
+      seekEnabled: parseNum(r[48]),
+      pctSeekEnabled: parseNum(r[49]),
+      postings: parseNum(r[50]),
+      customersPosting: parseNum(r[51]),
+    })).filter(r => r.week !== '');
+
+    const result = { ats, jobs, seek };
     setCached(cacheKey, result, 15 * 60 * 1000);
     res.json(result);
   } catch (err) {

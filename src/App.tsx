@@ -3,6 +3,7 @@ import AREAS from './config/areaConfig';
 import AreaDashboard from './components/AreaDashboard';
 import AreaSettings from './components/AreaSettings';
 import PaidJobAdsDashboard from './components/PaidJobAdsDashboard';
+import ThreePGDashboard from './components/ThreePGDashboard';
 import {
   AppContainer, Header, HeaderLeft, Title, Subtitle,
   HeaderActions, Button, TabBar, Tab
@@ -11,7 +12,8 @@ import {
 const STORAGE_KEY = 'cpo_dashboard_enabled_areas';
 
 const PAID_ADS_AREA = { id: 'paid-job-ads', name: 'Paid Job Ads' };
-const ALL_AREA_IDS = [...AREAS.map(a => a.id), PAID_ADS_AREA.id];
+const THREE_PG_AREA = { id: '3pg', name: '3PG' };
+const ALL_AREA_IDS = [...AREAS.map(a => a.id), PAID_ADS_AREA.id, THREE_PG_AREA.id];
 
 function loadEnabledIds(): Set<string> {
   try {
@@ -22,6 +24,7 @@ function loadEnabledIds(): Set<string> {
         // Ensure paid-job-ads is included if not explicitly stored (migration)
         const set = new Set(parsed);
         if (!parsed.includes(PAID_ADS_AREA.id)) set.add(PAID_ADS_AREA.id);
+        if (!parsed.includes(THREE_PG_AREA.id)) set.add(THREE_PG_AREA.id);
         return set;
       }
     }
@@ -37,8 +40,10 @@ const App: React.FC = () => {
   const [enabledIds, setEnabledIds] = useState<Set<string>>(loadEnabledIds);
   const visibleAreas = AREAS.filter(a => enabledIds.has(a.id));
   const paidAdsVisible = enabledIds.has(PAID_ADS_AREA.id);
+  const threePgVisible = enabledIds.has(THREE_PG_AREA.id);
   const [activeId, setActiveId] = useState<string>(() => visibleAreas[0]?.id ?? AREAS[0].id);
   const PAID_ADS_ID = PAID_ADS_AREA.id;
+  const THREE_PG_ID = THREE_PG_AREA.id;
   const [refreshKey, setRefreshKey] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
 
@@ -87,16 +92,23 @@ const App: React.FC = () => {
             Paid Job Ads
           </Tab>
         )}
+        {threePgVisible && (
+          <Tab active={activeId === THREE_PG_ID} onClick={() => setActiveId(THREE_PG_ID)}>
+            3PG
+          </Tab>
+        )}
       </TabBar>
 
       {activeId === PAID_ADS_ID
         ? <PaidJobAdsDashboard refreshKey={refreshKey} />
+        : activeId === THREE_PG_ID
+        ? <ThreePGDashboard refreshKey={refreshKey} />
         : activeArea && <AreaDashboard key={activeArea.id} area={activeArea} refreshKey={refreshKey} />
       }
 
       {showSettings && (
         <AreaSettings
-          areas={[...AREAS, PAID_ADS_AREA]}
+          areas={[...AREAS, PAID_ADS_AREA, THREE_PG_AREA]}
           enabledIds={enabledIds}
           onToggle={handleToggle}
           onClose={() => setShowSettings(false)}
